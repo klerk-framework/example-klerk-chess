@@ -66,7 +66,9 @@ suspend fun renderGame(call: ApplicationCall) {
         }
         body {
             style = "max-width: 120em;"
-            a("/") { +"Home" }
+            nav {
+                a("/") { +"Home" }
+            }
             h1 { +"${renderGameData.whiteName} (white) vs ${renderGameData.blackName} (black)" }
 
             // state

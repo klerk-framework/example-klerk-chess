@@ -22,6 +22,16 @@ suspend fun listGames(call: ApplicationCall) {
                 styleLink("https://unpkg.com/sakura.css/css/sakura.css")
             }
             body {
+                nav {
+                    style = "text-align: right;"
+                    a("/admin") {
+                        style = "margin: 20px;"
+                        +"Admin UI"
+                    }
+                    a("/graphiql") { +"GraphQL" }
+                    hr()
+                }
+
                 h2 { +"Top scores" }
                 table {
                     list(data.users.all).sortedByDescending { it.props.score.int }.forEach { user ->
