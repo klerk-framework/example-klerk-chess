@@ -3,6 +3,8 @@ package com.prettybyte.chess.klerk.game
 import com.prettybyte.chess.klerk.*
 import com.prettybyte.chess.klerk.game.Board.Companion.fromMoves
 import com.prettybyte.chess.klerk.game.GameState.*
+import com.prettybyte.chess.klerk.user.UpdateScore
+import com.prettybyte.chess.klerk.user.UpdateScoreParams
 import com.prettybyte.klerk.*
 import com.prettybyte.klerk.Validity.Invalid
 import com.prettybyte.klerk.Validity.Valid
@@ -314,13 +316,10 @@ fun updatePlayersRatings(args: ArgForInstanceNonEvent<Game, Ctx, Collections>): 
         Draw.name -> 1
         else -> 0
     }
-    return emptyList()
-    /*return listOf(
+    return listOf(
         Command(UpdateScore, args.model.props.whitePlayer, UpdateScoreParams(Score(whitePoints))),
         Command(UpdateScore, args.model.props.blackPlayer, UpdateScoreParams(Score(blackPoints))),
     )
-
-     */
 }
 
 fun onlyByCurrentPlayer(args: ArgForInstanceEvent<Game, Nothing?, Ctx, Collections>): Validity {
