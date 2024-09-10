@@ -1,9 +1,9 @@
-package com.prettybyte.chess.klerk.game.chessrules
+package dev.klerkframework.chess.klerk.game.chessrules
 
-import com.prettybyte.chess.klerk.CoordinateNotationMove
-import com.prettybyte.chess.klerk.Position
-import com.prettybyte.chess.klerk.game.Board
-import com.prettybyte.chess.klerk.game.isBlackCheck
+import dev.klerkframework.chess.klerk.CoordinateNotationMove
+import dev.klerkframework.chess.klerk.Position
+import dev.klerkframework.chess.klerk.game.Board
+import dev.klerkframework.chess.klerk.game.isBlackCheck
 import kotlin.test.Test
 import kotlin.test.assertTrue
 

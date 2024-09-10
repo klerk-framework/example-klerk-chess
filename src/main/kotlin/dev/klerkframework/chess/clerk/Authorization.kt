@@ -1,7 +1,7 @@
-package com.prettybyte.chess.klerk
+package dev.klerkframework.chess.klerk
 
-import com.prettybyte.klerk.*
-import com.prettybyte.klerk.PositiveAuthorization.Allow
+import dev.klerkframework.klerk.*
+import dev.klerkframework.klerk.PositiveAuthorization.Allow
 
 fun createAuthorizationRules(): ConfigBuilder<Ctx, Collections>.() -> Unit = {
     authorization {

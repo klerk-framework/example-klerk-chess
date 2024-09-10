@@ -1,12 +1,12 @@
-package com.prettybyte.chess.klerk.game
+package dev.klerkframework.chess.klerk.game
 
-import com.prettybyte.chess.klerk.Collections
-import com.prettybyte.chess.klerk.Ctx
-import com.prettybyte.chess.klerk.game.ShowNotificationDecisions.*
-import com.prettybyte.klerk.ArgForInstanceNonEvent
-import com.prettybyte.klerk.misc.AlgorithmBuilder
-import com.prettybyte.klerk.misc.Decision
-import com.prettybyte.klerk.misc.FlowChartAlgorithm
+import dev.klerkframework.chess.klerk.Collections
+import dev.klerkframework.chess.klerk.Ctx
+import dev.klerkframework.chess.klerk.game.ShowNotificationDecisions.*
+import dev.klerkframework.klerk.ArgForInstanceNonEvent
+import dev.klerkframework.klerk.misc.AlgorithmBuilder
+import dev.klerkframework.klerk.misc.Decision
+import dev.klerkframework.klerk.misc.FlowChartAlgorithm
 
 object IsAutomaticDraw : FlowChartAlgorithm<ArgForInstanceNonEvent<Game, Ctx, Collections>, Boolean>("Is it a draw?") {
 

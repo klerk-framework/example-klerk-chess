@@ -1,14 +1,14 @@
-package com.prettybyte.chess.klerk.game
+package dev.klerkframework.chess.klerk.game
 
-import com.prettybyte.chess.klerk.CoordinateNotationMove
-import com.prettybyte.chess.klerk.Position
-import com.prettybyte.chess.klerk.Collections
-import com.prettybyte.chess.klerk.Ctx
-import com.prettybyte.chess.klerk.game.Color.Black
-import com.prettybyte.chess.klerk.game.Color.White
-import com.prettybyte.chess.klerk.game.Piece.*
-import com.prettybyte.klerk.ArgForInstanceNonEvent
-import com.prettybyte.klerk.Model
+import dev.klerkframework.chess.klerk.CoordinateNotationMove
+import dev.klerkframework.chess.klerk.Position
+import dev.klerkframework.chess.klerk.Collections
+import dev.klerkframework.chess.klerk.Ctx
+import dev.klerkframework.chess.klerk.game.Color.Black
+import dev.klerkframework.chess.klerk.game.Color.White
+import dev.klerkframework.chess.klerk.game.Piece.*
+import dev.klerkframework.klerk.ArgForInstanceNonEvent
+import dev.klerkframework.klerk.Model
 
 class Board(val pieces: List<String>) {
 

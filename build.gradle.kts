@@ -13,33 +13,18 @@ plugins {
     id("com.expediagroup.graphql") version "7.1.1"
 }
 
-group = "com.prettybyte.chess"
+group = "dev.klerkframework.chess"
 version = "0.0.1"
 
 application {
-    mainClass.set("com.prettybyte.chess.ApplicationKt")
+    mainClass.set("dev.klerkframework.chess.ApplicationKt")
 
     val isDevelopment: Boolean = project.ext.has("development")
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
 }
 
-repositories {
-    mavenCentral()
-    maven {
-        url = uri("https://gitlab.com/api/v4/projects/33843632/packages/maven")
-        name = "GitLab"
-        credentials(HttpHeaderCredentials::class) {
-            name = "Private-Token"
-            value = findProperty("gitLabPrivateToken") as String?
-        }
-        authentication {
-            create("header", HttpHeaderAuthentication::class)
-        }
-    }
-}
-
 dependencies {
-    implementation("com.prettybyte:dataframework:$klerk_version")
+    implementation("com.github.klerk-framework:klerk:1.0.0-beta.1")
     implementation("io.github.microutils:kotlin-logging-jvm:$kotlin_logging_version")
     implementation("io.ktor:ktor-server-core-jvm")
     implementation("io.ktor:ktor-server-content-negotiation:$ktor_version")

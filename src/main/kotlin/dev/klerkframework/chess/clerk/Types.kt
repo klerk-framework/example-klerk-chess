@@ -1,8 +1,8 @@
-package com.prettybyte.chess.klerk
+package dev.klerkframework.chess.klerk
 
-import com.prettybyte.klerk.InvalidParametersProblem
-import com.prettybyte.klerk.datatypes.IntContainer
-import com.prettybyte.klerk.datatypes.StringContainer
+import dev.klerkframework.klerk.InvalidParametersProblem
+import dev.klerkframework.klerk.datatypes.IntContainer
+import dev.klerkframework.klerk.datatypes.StringContainer
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit

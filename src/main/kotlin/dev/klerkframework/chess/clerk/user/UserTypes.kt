@@ -1,7 +1,7 @@
-package com.prettybyte.chess.klerk.user
+package dev.klerkframework.chess.klerk.user
 
-import com.prettybyte.chess.klerk.Score
-import com.prettybyte.chess.klerk.UserName
+import dev.klerkframework.chess.klerk.Score
+import dev.klerkframework.chess.klerk.UserName
 
 data class User(val name: UserName, val score: Score) {
 

@@ -1,4 +1,4 @@
-package com.prettybyte.chess.klerk
+package dev.klerkframework.chess.klerk
 
 import kotlin.test.Test
 import kotlin.test.assertEquals

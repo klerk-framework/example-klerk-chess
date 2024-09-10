@@ -1,15 +1,15 @@
-package com.prettybyte.chess
+package dev.klerkframework.chess
 
-import com.prettybyte.chess.klerk.Collections
-import com.prettybyte.chess.klerk.Ctx
-import com.prettybyte.chess.klerk.game.*
-import com.prettybyte.klerk.ModelID
-import com.prettybyte.klerk.actions.Job
-import com.prettybyte.klerk.actions.JobContext
-import com.prettybyte.klerk.actions.JobResult
-import com.prettybyte.klerk.command.Command
-import com.prettybyte.klerk.command.ProcessingOptions
-import com.prettybyte.klerk.command.CommandToken
+import dev.klerkframework.chess.klerk.Collections
+import dev.klerkframework.chess.klerk.Ctx
+import dev.klerkframework.chess.klerk.game.*
+import dev.klerkframework.klerk.ModelID
+import dev.klerkframework.klerk.actions.Job
+import dev.klerkframework.klerk.actions.JobContext
+import dev.klerkframework.klerk.actions.JobResult
+import dev.klerkframework.klerk.command.Command
+import dev.klerkframework.klerk.command.ProcessingOptions
+import dev.klerkframework.klerk.command.CommandToken
 import kotlinx.coroutines.delay
 import kotlin.random.Random
 

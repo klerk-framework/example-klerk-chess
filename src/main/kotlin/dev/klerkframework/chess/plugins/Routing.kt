@@ -1,16 +1,16 @@
-package com.prettybyte.chess.plugins
+package dev.klerkframework.chess.plugins
 
 import com.expediagroup.graphql.server.ktor.graphQLGetRoute
 import com.expediagroup.graphql.server.ktor.graphQLPostRoute
 import com.expediagroup.graphql.server.ktor.graphQLSDLRoute
 import com.expediagroup.graphql.server.ktor.graphiQLRoute
-import com.prettybyte.chess.klerk
-import com.prettybyte.chess.klerk.game.IsAutomaticDraw
-import com.prettybyte.chess.html.*
-import com.prettybyte.chess.klerk.Ctx
-import com.prettybyte.klerk.EventReference
-import com.prettybyte.webutils.LowCodeConfig
-import com.prettybyte.webutils.LowCodeMain
+import dev.klerkframework.chess.klerk
+import dev.klerkframework.chess.klerk.game.IsAutomaticDraw
+import dev.klerkframework.chess.html.*
+import dev.klerkframework.chess.klerk.Ctx
+import dev.klerkframework.klerk.EventReference
+import dev.klerkframework.webutils.LowCodeConfig
+import dev.klerkframework.webutils.LowCodeMain
 import graphql.GraphQLContext
 import io.ktor.server.application.*
 import io.ktor.server.routing.*

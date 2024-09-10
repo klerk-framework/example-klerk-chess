@@ -1,23 +1,23 @@
-package com.prettybyte.chess
+package dev.klerkframework.chess
 
 import com.expediagroup.graphql.server.ktor.*
-import com.prettybyte.chess.klerk.Ctx
-import com.prettybyte.chess.klerk.UserName
-import com.prettybyte.chess.klerk.createConfig
-import com.prettybyte.chess.klerk.game.Game
-import com.prettybyte.chess.klerk.game.GameState.*
-import com.prettybyte.chess.klerk.user.CreateUser
-import com.prettybyte.chess.klerk.user.CreateUserParams
-import com.prettybyte.chess.plugins.configureRouting
-import com.prettybyte.chess.plugins.context
-import com.prettybyte.klerk.Klerk
-import com.prettybyte.klerk.ModelID
-import com.prettybyte.klerk.command.Command
-import com.prettybyte.klerk.command.CommandToken
-import com.prettybyte.klerk.command.ProcessingOptions
-import com.prettybyte.klerk.graphql.EventMutationService
-import com.prettybyte.klerk.graphql.GenericQuery
-import com.prettybyte.klerk.read.ModelModification
+import dev.klerkframework.chess.klerk.Ctx
+import dev.klerkframework.chess.klerk.UserName
+import dev.klerkframework.chess.klerk.createConfig
+import dev.klerkframework.chess.klerk.game.Game
+import dev.klerkframework.chess.klerk.game.GameState.*
+import dev.klerkframework.chess.klerk.user.CreateUser
+import dev.klerkframework.chess.klerk.user.CreateUserParams
+import dev.klerkframework.chess.plugins.configureRouting
+import dev.klerkframework.chess.plugins.context
+import dev.klerkframework.klerk.Klerk
+import dev.klerkframework.klerk.ModelID
+import dev.klerkframework.klerk.command.Command
+import dev.klerkframework.klerk.command.CommandToken
+import dev.klerkframework.klerk.command.ProcessingOptions
+import dev.klerkframework.klerk.graphql.EventMutationService
+import dev.klerkframework.klerk.graphql.GenericQuery
+import dev.klerkframework.klerk.read.ModelModification
 import graphql.GraphQLContext
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
@@ -63,7 +63,7 @@ suspend fun createPlayers() {
 fun Application.module() {
     install(GraphQL) {
         schema {
-            packages = listOf("com.prettybyte.klerk.graphql")
+            packages = listOf("dev.klerkframework.klerk.graphql")
             queries = listOf(GenericQuery(klerk, GraphQLContext::context))
             mutations = listOf(EventMutationService(klerk, GraphQLContext::context))
         }

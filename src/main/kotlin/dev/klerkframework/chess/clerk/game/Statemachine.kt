@@ -1,16 +1,16 @@
-package com.prettybyte.chess.klerk.game
+package dev.klerkframework.chess.klerk.game
 
-import com.prettybyte.chess.klerk.*
-import com.prettybyte.chess.klerk.game.Board.Companion.fromMoves
-import com.prettybyte.chess.klerk.game.GameState.*
-import com.prettybyte.chess.klerk.user.UpdateScore
-import com.prettybyte.chess.klerk.user.UpdateScoreParams
-import com.prettybyte.klerk.*
-import com.prettybyte.klerk.Validity.Invalid
-import com.prettybyte.klerk.Validity.Valid
-import com.prettybyte.klerk.command.Command
-import com.prettybyte.klerk.statemachine.StateMachine
-import com.prettybyte.klerk.statemachine.stateMachine
+import dev.klerkframework.chess.klerk.*
+import dev.klerkframework.chess.klerk.game.Board.Companion.fromMoves
+import dev.klerkframework.chess.klerk.game.GameState.*
+import dev.klerkframework.chess.klerk.user.UpdateScore
+import dev.klerkframework.chess.klerk.user.UpdateScoreParams
+import dev.klerkframework.klerk.*
+import dev.klerkframework.klerk.Validity.Invalid
+import dev.klerkframework.klerk.Validity.Valid
+import dev.klerkframework.klerk.command.Command
+import dev.klerkframework.klerk.statemachine.StateMachine
+import dev.klerkframework.klerk.statemachine.stateMachine
 import kotlinx.datetime.Instant
 import kotlin.time.Duration.Companion.ZERO
 

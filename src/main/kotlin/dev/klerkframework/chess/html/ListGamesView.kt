@@ -1,14 +1,14 @@
-package com.prettybyte.chess.html
+package dev.klerkframework.chess.html
 
-import com.prettybyte.chess.klerk
-import com.prettybyte.chess.klerk.Ctx
-import com.prettybyte.chess.klerk.game.Game
-import com.prettybyte.chess.plugins.context
-import com.prettybyte.chess.plugins.contextFromCall
-import com.prettybyte.chess.plugins.showOptionalParameters
-import com.prettybyte.webutils.ButtonTargets
-import com.prettybyte.webutils.LowCodeConfig
-import com.prettybyte.webutils.LowCodeCreateEvent
+import dev.klerkframework.chess.klerk
+import dev.klerkframework.chess.klerk.Ctx
+import dev.klerkframework.chess.klerk.game.Game
+import dev.klerkframework.chess.plugins.context
+import dev.klerkframework.chess.plugins.contextFromCall
+import dev.klerkframework.chess.plugins.showOptionalParameters
+import dev.klerkframework.webutils.ButtonTargets
+import dev.klerkframework.webutils.LowCodeConfig
+import dev.klerkframework.webutils.LowCodeCreateEvent
 import io.ktor.server.application.*
 import io.ktor.server.html.*
 import kotlinx.html.*

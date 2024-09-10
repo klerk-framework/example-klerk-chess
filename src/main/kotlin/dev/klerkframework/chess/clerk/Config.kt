@@ -1,13 +1,13 @@
-package com.prettybyte.chess.klerk
+package dev.klerkframework.chess.klerk
 
-import com.prettybyte.chess.klerk.game.Game
-import com.prettybyte.chess.klerk.game.createGameStateMachine
-import com.prettybyte.chess.klerk.user.User
-import com.prettybyte.chess.klerk.user.createUserStateMachine
-import com.prettybyte.klerk.*
-import com.prettybyte.klerk.collection.ModelCollections
-import com.prettybyte.klerk.storage.Persistence
-import com.prettybyte.klerk.storage.SqlPersistence
+import dev.klerkframework.chess.klerk.game.Game
+import dev.klerkframework.chess.klerk.game.createGameStateMachine
+import dev.klerkframework.chess.klerk.user.User
+import dev.klerkframework.chess.klerk.user.createUserStateMachine
+import dev.klerkframework.klerk.*
+import dev.klerkframework.klerk.collection.ModelCollections
+import dev.klerkframework.klerk.storage.Persistence
+import dev.klerkframework.klerk.storage.SqlPersistence
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import org.sqlite.SQLiteDataSource

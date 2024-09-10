@@ -1,16 +1,16 @@
-package com.prettybyte.chess.klerk.user
+package dev.klerkframework.chess.klerk.user
 
-import com.prettybyte.chess.klerk.Collections
-import com.prettybyte.chess.klerk.Ctx
-import com.prettybyte.klerk.InstanceEventNoParameters
-import com.prettybyte.klerk.InstanceEventWithParameters
-import com.prettybyte.klerk.VoidEventWithParameters
-import com.prettybyte.klerk.statemachine.StateMachine
-import com.prettybyte.klerk.statemachine.stateMachine
-import com.prettybyte.chess.klerk.Score
-import com.prettybyte.chess.klerk.user.UserStates.*
-import com.prettybyte.klerk.ArgForInstanceEvent
-import com.prettybyte.klerk.ArgForVoidEvent
+import dev.klerkframework.chess.klerk.Collections
+import dev.klerkframework.chess.klerk.Ctx
+import dev.klerkframework.klerk.InstanceEventNoParameters
+import dev.klerkframework.klerk.InstanceEventWithParameters
+import dev.klerkframework.klerk.VoidEventWithParameters
+import dev.klerkframework.klerk.statemachine.StateMachine
+import dev.klerkframework.klerk.statemachine.stateMachine
+import dev.klerkframework.chess.klerk.Score
+import dev.klerkframework.chess.klerk.user.UserStates.*
+import dev.klerkframework.klerk.ArgForInstanceEvent
+import dev.klerkframework.klerk.ArgForVoidEvent
 
 enum class UserStates {
     Created

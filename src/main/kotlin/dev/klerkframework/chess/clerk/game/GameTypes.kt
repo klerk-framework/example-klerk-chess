@@ -1,8 +1,8 @@
-package com.prettybyte.chess.klerk.game
+package dev.klerkframework.chess.klerk.game
 
-import com.prettybyte.chess.klerk.*
-import com.prettybyte.chess.klerk.user.User
-import com.prettybyte.klerk.ModelID
+import dev.klerkframework.chess.klerk.*
+import dev.klerkframework.chess.klerk.user.User
+import dev.klerkframework.klerk.ModelID
 
 data class Game(
     val whitePlayer: ModelID<User>,
