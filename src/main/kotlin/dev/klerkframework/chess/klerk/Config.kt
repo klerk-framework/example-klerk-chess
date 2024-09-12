@@ -12,7 +12,7 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import org.sqlite.SQLiteDataSource
 
-class Ctx private constructor(
+class Ctx(
     override val actor: ActorIdentity,
     override val auditExtra: String? = null,
     override val time: Instant = Clock.System.now(),
@@ -48,6 +48,7 @@ fun createConfig(): Config<Ctx, Collections> {
             model(Game::class, createGameStateMachine(collections), collections.games)
         }
         apply(createAuthorizationRules())
+        contextProvider { actor -> Ctx(actor) }
     }
 }
 

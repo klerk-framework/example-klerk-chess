@@ -24,7 +24,7 @@ application {
 }
 
 dependencies {
-    implementation("com.github.klerk-framework:klerk:1.0.0-beta.1")
+    implementation("com.github.klerk-framework:klerk:$klerk_version")
     implementation("io.github.microutils:kotlin-logging-jvm:$kotlin_logging_version")
     implementation("io.ktor:ktor-server-core-jvm")
     implementation("io.ktor:ktor-server-content-negotiation:$ktor_version")
