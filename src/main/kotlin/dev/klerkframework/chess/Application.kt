@@ -8,9 +8,11 @@ import dev.klerkframework.chess.klerk.game.Game
 import dev.klerkframework.chess.klerk.game.GameState.*
 import dev.klerkframework.chess.klerk.user.CreateUser
 import dev.klerkframework.chess.klerk.user.CreateUserParams
+import dev.klerkframework.chess.klerk.user.User
 import dev.klerkframework.chess.plugins.configureRouting
 import dev.klerkframework.chess.plugins.context
 import dev.klerkframework.klerk.Klerk
+import dev.klerkframework.klerk.Model
 import dev.klerkframework.klerk.ModelID
 import dev.klerkframework.klerk.command.Command
 import dev.klerkframework.klerk.command.CommandToken
@@ -79,8 +81,6 @@ suspend fun initAI() {
     log.info { "Initiating AI" }
     val robot = klerk.read(Ctx.system()) { getFirstWhere(data.users.all) { it.props.name.string == "Mr. Robot" } }
     val context = Ctx.fromUser(robot)
-    val statesWhereAiShouldAct =
-        setOf(BlackTurn.name, BlackPromotePawn.name, WhiteHasProposedDraw.name, WaitingForInvitedPlayer.name)
 
     // make AI react to events
     GlobalScope.launch {
@@ -91,7 +91,7 @@ suspend fun initAI() {
                     return@collect
                 }
                 val game = (model.props as Game)
-                if (game.blackPlayer == robot.id && statesWhereAiShouldAct.contains(model.state)) {
+                if (aiShouldAct(game, model.state, robot)) {
                     @Suppress("UNCHECKED_CAST")
                     klerk.jobs.scheduleAction(CalculateAiAction(model.id as ModelID<Game>))
                 }
@@ -100,11 +100,16 @@ suspend fun initAI() {
     }
 
     // make AI aware of ongoing games
-    val gamesWithBlackTurn = klerk.read(context) {
-        list(data.games.all) { it.state == BlackTurn.name }
-    }
-    gamesWithBlackTurn.forEach {
+    klerk.read(context) {
+        list(data.games.all) { aiShouldAct(it.props, it.state, robot) }
+    }.forEach {
         klerk.jobs.scheduleAction(CalculateAiAction(it.id))
     }
 
+}
+
+fun aiShouldAct(game: Game, state: String, robot: Model<User>): Boolean {
+    val statesWhereAiShouldAct =
+        setOf(BlackTurn.name, BlackPromotePawn.name, WhiteHasProposedDraw.name, WaitingForInvitedPlayer.name)
+    return game.blackPlayer == robot.id && statesWhereAiShouldAct.contains(state)
 }

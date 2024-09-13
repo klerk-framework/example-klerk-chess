@@ -369,6 +369,6 @@ fun updatePlayerTime(args: ArgForInstanceNonEvent<Game, Ctx, Collections>): Game
 
 fun remainingPlayTime(args: ArgForInstanceNonEvent<Game, Ctx, Collections>): Instant {
     val playTime = if (whitePlayerStates.contains(args.model.state)) args.model.props.whitePlayerTime else args.model.props.blackPlayerTime
-    val remainingTime = 1.minutes.minus(playTime.duration)
+    val remainingTime = 5.minutes.minus(playTime.duration)
     return args.time.plus(remainingTime)
 }
