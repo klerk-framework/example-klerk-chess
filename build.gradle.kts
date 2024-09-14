@@ -46,3 +46,5 @@ dependencies {
 kotlin {
     jvmToolchain(17)
 }
+
+tasks.jar { enabled = false }
