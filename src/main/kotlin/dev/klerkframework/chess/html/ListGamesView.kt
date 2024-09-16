@@ -1,11 +1,10 @@
 package dev.klerkframework.chess.html
 
-import dev.klerkframework.chess.klerk
+import dev.klerkframework.chess.klerk.Collections
 import dev.klerkframework.chess.klerk.Ctx
 import dev.klerkframework.chess.klerk.game.Game
 import dev.klerkframework.chess.plugins.context
-import dev.klerkframework.chess.plugins.contextFromCall
-import dev.klerkframework.chess.plugins.showOptionalParameters
+import dev.klerkframework.klerk.Klerk
 import dev.klerkframework.webutils.ButtonTargets
 import dev.klerkframework.webutils.LowCodeConfig
 import dev.klerkframework.webutils.LowCodeCreateEvent
@@ -13,8 +12,8 @@ import io.ktor.server.application.*
 import io.ktor.server.html.*
 import kotlinx.html.*
 
-suspend fun listGames(call: ApplicationCall) {
-    val context = call.context()
+suspend fun listGames(call: ApplicationCall, klerk: Klerk<Ctx, Collections>, lowCodeConfig: LowCodeConfig<Ctx>) {
+    val context = call.context(klerk)
     klerk.readSuspend(context) {
         call.respondHtml {
             head {
@@ -55,7 +54,7 @@ suspend fun listGames(call: ApplicationCall) {
 
                 h2 { +"Actions" }
                 getPossibleVoidEvents(Game::class).forEach {
-                    apply(LowCodeCreateEvent.renderButton(it, klerk, null, createLCConfig(), buttonTargets, context))
+                    apply(LowCodeCreateEvent.renderButton(it, klerk, null, lowCodeConfig, buttonTargets, context))
                     br()
                 }
             }
@@ -64,12 +63,3 @@ suspend fun listGames(call: ApplicationCall) {
 }
 
 val buttonTargets = ButtonTargets(back = "/", model = "/game/{id}", "/")
-
-internal fun createLCConfig(): LowCodeConfig<Ctx> {
-    return LowCodeConfig(
-        basePath = "/admin",
-        contextProvider = ::contextFromCall,
-        showOptionalParameters = ::showOptionalParameters,
-        cssPath = "https://unpkg.com/sakura.css/css/sakura.css"
-    )
-}

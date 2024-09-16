@@ -1,7 +1,8 @@
 package dev.klerkframework.chess.html
 
-import dev.klerkframework.chess.klerk
+import dev.klerkframework.chess.klerk.Collections
 import dev.klerkframework.chess.klerk.CoordinateNotationMove
+import dev.klerkframework.chess.klerk.Ctx
 import dev.klerkframework.chess.klerk.Position
 import dev.klerkframework.chess.klerk.UserName
 import dev.klerkframework.chess.klerk.game.Board
@@ -13,6 +14,7 @@ import dev.klerkframework.klerk.*
 import dev.klerkframework.klerk.command.Command
 import dev.klerkframework.klerk.command.ProcessingOptions
 import dev.klerkframework.klerk.command.CommandToken
+import dev.klerkframework.webutils.LowCodeConfig
 import dev.klerkframework.webutils.LowCodeCreateEvent
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -28,8 +30,8 @@ private data class RenderGameData(
     val possibleEvents: Set<EventReference>
 )
 
-suspend fun renderGame(call: ApplicationCall) {
-    val context = call.context()
+suspend fun renderGame(call: ApplicationCall, klerk: Klerk<Ctx, Collections>, lowCodeConfig: LowCodeConfig<Ctx>) {
+    val context = call.context(klerk)
     val gameId = ModelID.from<Game>(requireNotNull(call.parameters["id"]))
     val dryRunMove = moveInQueryParameters(call)
     val dryRunResult = if (dryRunMove == null) {
@@ -100,7 +102,7 @@ suspend fun renderGame(call: ApplicationCall) {
                     renderGameData.possibleEvents
                         .filter { it != MakeMove.id }   // we handle MakeMove separately
                         .forEach {
-                            apply(LowCodeCreateEvent.renderButton(it, klerk, renderGameData.game.id, createLCConfig(), buttonTargets, context))
+                            apply(LowCodeCreateEvent.renderButton(it, klerk, renderGameData.game.id, lowCodeConfig, buttonTargets, context))
                             br()
                         }
 
@@ -304,14 +306,14 @@ private fun includeStyle() = """
 
     </style>"""
 
-suspend fun confirmMove(call: ApplicationCall) {
+suspend fun confirmMove(call: ApplicationCall, klerk: Klerk<Ctx, Collections>) {
     val gameId = ModelID.from<Game>(requireNotNull(call.parameters["id"]))
     val moveString = call.receiveParameters()["move"]
     moveString?.let {
         val move = CoordinateNotationMove(it)
         klerk.handle(
             Command(MakeMove, gameId, MakeMoveParams(move.from, move.to)),
-            call.context(),
+            call.context(klerk),
             ProcessingOptions(CommandToken.simple())
         )
 
@@ -319,10 +321,10 @@ suspend fun confirmMove(call: ApplicationCall) {
     call.respondRedirect("/game/${gameId}")
 }
 
-suspend fun handleSse(call: ApplicationCall) {
+suspend fun handleSse(call: ApplicationCall, klerk: Klerk<Ctx, Collections>) {
     //There is better support for SSE in ktor 3
     val id = ModelID.from<Any>(requireNotNull(call.parameters["id"]))
-    val events = klerk.models.subscribe(call.context(), id)
+    val events = klerk.models.subscribe(call.context(klerk), id)
     call.response.cacheControl(CacheControl.NoCache(null))
     call.respondTextWriter(contentType = ContentType.Text.EventStream) {
         events.collect {

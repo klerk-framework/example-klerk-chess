@@ -1,6 +1,7 @@
 package dev.klerkframework.chess
 
 import com.expediagroup.graphql.server.ktor.*
+import dev.klerkframework.chess.klerk.Collections
 import dev.klerkframework.chess.klerk.Ctx
 import dev.klerkframework.chess.klerk.UserName
 import dev.klerkframework.chess.klerk.createConfig
@@ -32,21 +33,31 @@ import mu.KotlinLogging
 
 private val log = KotlinLogging.logger {}
 
-val klerk = Klerk.create(createConfig())
-
 fun main() {
+    val klerk = Klerk.create(createConfig())
     runBlocking {
         klerk.meta.start()
         if (klerk.meta.modelsCount == 0) {
-            createPlayers()
+            createPlayers(klerk)
         }
-        initAI()
+        initAI(klerk)
     }
-    embeddedServer(Netty, port = 8080, host = "0.0.0.0", module = Application::module)
-        .start(wait = true)
+
+    suspend fun graphQlContextProvider(graphQlContext: GraphQLContext) = graphQlContext.context(klerk)
+
+    embeddedServer(Netty, port = 8080, host = "0.0.0.0", module = {
+        install(GraphQL) {
+            schema {
+                packages = listOf("dev.klerkframework.klerk.graphql")
+                queries = listOf(GenericQuery(klerk, ::graphQlContextProvider))
+                mutations = listOf(EventMutationService(klerk, ::graphQlContextProvider))
+            }
+        }
+        configureRouting(klerk)
+    }).start(wait = true)
 }
 
-suspend fun createPlayers() {
+suspend fun createPlayers(klerk: Klerk<Ctx, Collections>) {
     val commandCreateAlice = Command(
         event = CreateUser,
         model = null,
@@ -62,22 +73,12 @@ suspend fun createPlayers() {
     klerk.handle(commandCreateRobot, Ctx.system(), ProcessingOptions(CommandToken.simple()))
 }
 
-fun Application.module() {
-    install(GraphQL) {
-        schema {
-            packages = listOf("dev.klerkframework.klerk.graphql")
-            queries = listOf(GenericQuery(klerk, GraphQLContext::context))
-            mutations = listOf(EventMutationService(klerk, GraphQLContext::context))
-        }
-    }
-    configureRouting()
-}
 
 @OptIn(DelicateCoroutinesApi::class)
 /**
  * Subscribes to game changes. Creates a job if AI should act.
  */
-suspend fun initAI() {
+suspend fun initAI(klerk: Klerk<Ctx, Collections>) {
     log.info { "Initiating AI" }
     val robot = klerk.read(Ctx.system()) { getFirstWhere(data.users.all) { it.props.name.string == "Mr. Robot" } }
     val context = Ctx.fromUser(robot)
@@ -93,7 +94,7 @@ suspend fun initAI() {
                 val game = (model.props as Game)
                 if (aiShouldAct(game, model.state, robot)) {
                     @Suppress("UNCHECKED_CAST")
-                    klerk.jobs.scheduleAction(CalculateAiAction(model.id as ModelID<Game>))
+                    klerk.jobs.scheduleAction(CalculateAiAction(model.id as ModelID<Game>, klerk))
                 }
             }
         }
@@ -103,7 +104,7 @@ suspend fun initAI() {
     klerk.read(context) {
         list(data.games.all) { aiShouldAct(it.props, it.state, robot) }
     }.forEach {
-        klerk.jobs.scheduleAction(CalculateAiAction(it.id))
+        klerk.jobs.scheduleAction(CalculateAiAction(it.id, klerk))
     }
 
 }

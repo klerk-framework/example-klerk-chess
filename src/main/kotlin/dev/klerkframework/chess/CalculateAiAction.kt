@@ -3,17 +3,18 @@ package dev.klerkframework.chess
 import dev.klerkframework.chess.klerk.Collections
 import dev.klerkframework.chess.klerk.Ctx
 import dev.klerkframework.chess.klerk.game.*
+import dev.klerkframework.klerk.Klerk
 import dev.klerkframework.klerk.ModelID
 import dev.klerkframework.klerk.actions.Job
 import dev.klerkframework.klerk.actions.JobContext
 import dev.klerkframework.klerk.actions.JobResult
 import dev.klerkframework.klerk.command.Command
-import dev.klerkframework.klerk.command.ProcessingOptions
 import dev.klerkframework.klerk.command.CommandToken
+import dev.klerkframework.klerk.command.ProcessingOptions
 import kotlinx.coroutines.delay
 import kotlin.random.Random
 
-class CalculateAiAction(val gameId: ModelID<Game>) : Job<Ctx, Collections> {
+class CalculateAiAction(val gameId: ModelID<Game>, val klerk: Klerk<Ctx, Collections>) : Job<Ctx, Collections> {
     private val random = Random(seed = 1)
     override val id = random.nextLong()
     override val maxRetries: Int = 0

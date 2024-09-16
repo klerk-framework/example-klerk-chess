@@ -32,7 +32,7 @@ Instead, it queries Klerk to figure out what to show on the screen. More specifi
 make a move from square <start> to square <end>?". It then renders the result.
 * The UI can resend the request saying "this time I mean it".
 * It knows that pieces should only be draggable when MakeMove is possible
-* It knows that it should reload the page whenever anything happens in the game.
+* It knows that it should reload the page whenever anything happens in the game (using server-sent events).
 
 There is a lot that the user interface _doesn't_ know:
 * How can a bishop move?
@@ -55,3 +55,7 @@ There GraphQL API obeys all the rules that you have configured.
 
 The computer plays as _Mr. Robot_. The application subscribes to game events and when it is Mr. Robot's turn, a
 background job is scheduled. The job waits 4 seconds and then makes a random (valid) move.
+
+### Authentication is assumed
+This example does not show how to authenticate the user. Authentication is something that typically happens outside 
+Klerk.
