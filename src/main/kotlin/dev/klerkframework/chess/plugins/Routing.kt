@@ -10,12 +10,11 @@ import dev.klerkframework.chess.klerk.Collections
 import dev.klerkframework.chess.klerk.Ctx
 import dev.klerkframework.klerk.EventReference
 import dev.klerkframework.klerk.Klerk
-import dev.klerkframework.webutils.LowCodeConfig
-import dev.klerkframework.webutils.LowCodeMain
+import dev.klerkframework.web.LowCodeConfig
+import dev.klerkframework.web.LowCodeMain
 import graphql.GraphQLContext
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
-
 
 fun Application.configureRouting(klerk: Klerk<Ctx, Collections>) {
     suspend fun contextFromCall(call: ApplicationCall): Ctx = call.context(klerk)
@@ -45,9 +44,7 @@ fun Application.configureRouting(klerk: Klerk<Ctx, Collections>) {
     }
 }
 
-internal fun showOptionalParameters(event: EventReference): Boolean {
-    return false
-}
+internal fun showOptionalParameters(event: EventReference) = false
 
 /**
  * Creates a Context from a Call.

@@ -5,9 +5,9 @@ import dev.klerkframework.chess.klerk.Ctx
 import dev.klerkframework.chess.klerk.game.Game
 import dev.klerkframework.chess.plugins.context
 import dev.klerkframework.klerk.Klerk
-import dev.klerkframework.webutils.ButtonTargets
-import dev.klerkframework.webutils.LowCodeConfig
-import dev.klerkframework.webutils.LowCodeCreateEvent
+import dev.klerkframework.web.ButtonTargets
+import dev.klerkframework.web.LowCodeConfig
+import dev.klerkframework.web.LowCodeCreateEvent
 import io.ktor.server.application.*
 import io.ktor.server.html.*
 import kotlinx.html.*
@@ -62,4 +62,4 @@ suspend fun listGames(call: ApplicationCall, klerk: Klerk<Ctx, Collections>, low
     }
 }
 
-val buttonTargets = ButtonTargets(back = "/", model = "/game/{id}", "/")
+val buttonTargets = ButtonTargets(back = "/", model = "/game/{id}", error = "/")

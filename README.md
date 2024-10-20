@@ -1,9 +1,12 @@
 # Chess
 
 This chess game is an example of how to build an application with Klerk. Typically, Klerk would not be used to create
-games, but a chess game is a well known example of a system that has non-trivial rules and states. 
+games, but a chess game is a well known example of a system that has non-trivial rules and states and therefore makes
+a good example. 
 
 ## Getting started
+
+Set the Project SDK to Java 17 (Open Module Settings -> Project).
 
 Set the following environment variables:
 * DATABASE_PATH=/path/to/klerk-chess.sqlite

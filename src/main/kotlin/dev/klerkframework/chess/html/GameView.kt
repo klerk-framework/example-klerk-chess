@@ -14,8 +14,8 @@ import dev.klerkframework.klerk.*
 import dev.klerkframework.klerk.command.Command
 import dev.klerkframework.klerk.command.ProcessingOptions
 import dev.klerkframework.klerk.command.CommandToken
-import dev.klerkframework.webutils.LowCodeConfig
-import dev.klerkframework.webutils.LowCodeCreateEvent
+import dev.klerkframework.web.LowCodeConfig
+import dev.klerkframework.web.LowCodeCreateEvent
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.html.*

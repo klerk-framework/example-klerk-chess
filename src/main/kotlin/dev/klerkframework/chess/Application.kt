@@ -1,6 +1,6 @@
 package dev.klerkframework.chess
 
-import com.expediagroup.graphql.server.ktor.*
+import com.expediagroup.graphql.server.ktor.GraphQL
 import dev.klerkframework.chess.klerk.Collections
 import dev.klerkframework.chess.klerk.Ctx
 import dev.klerkframework.chess.klerk.UserName
@@ -18,8 +18,8 @@ import dev.klerkframework.klerk.ModelID
 import dev.klerkframework.klerk.command.Command
 import dev.klerkframework.klerk.command.CommandToken
 import dev.klerkframework.klerk.command.ProcessingOptions
-import dev.klerkframework.klerk.graphql.EventMutationService
-import dev.klerkframework.klerk.graphql.GenericQuery
+import dev.klerkframework.graphql.EventMutationService
+import dev.klerkframework.graphql.GenericQuery
 import dev.klerkframework.klerk.read.ModelModification
 import graphql.GraphQLContext
 import io.ktor.server.application.*
@@ -48,7 +48,7 @@ fun main() {
     embeddedServer(Netty, port = 8080, host = "0.0.0.0", module = {
         install(GraphQL) {
             schema {
-                packages = listOf("dev.klerkframework.klerk.graphql")
+                packages = listOf("dev.klerkframework.graphql")
                 queries = listOf(GenericQuery(klerk, ::graphQlContextProvider))
                 mutations = listOf(EventMutationService(klerk, ::graphQlContextProvider))
             }
