@@ -6,16 +6,17 @@ import dev.klerkframework.chess.klerk.game.GameState.*
 import dev.klerkframework.chess.klerk.user.UpdateScore
 import dev.klerkframework.chess.klerk.user.UpdateScoreParams
 import dev.klerkframework.klerk.*
-import dev.klerkframework.klerk.Validity.Invalid
-import dev.klerkframework.klerk.Validity.Valid
+import dev.klerkframework.klerk.EventVisibility.EXTERNAL
+import dev.klerkframework.klerk.PropertyCollectionValidity.*
 import dev.klerkframework.klerk.command.Command
 import dev.klerkframework.klerk.statemachine.StateMachine
 import dev.klerkframework.klerk.statemachine.stateMachine
-import kotlinx.datetime.Instant
+import dev.klerkframework.klerk.validation.PropertyValidation
 import kotlin.time.Duration.Companion.ZERO
 
 
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Instant
 
 enum class GameState {
     WaitingForInvitedPlayer,
@@ -88,7 +89,7 @@ fun createGameStateMachine(collections: Collections): StateMachine<Game, Enum<*>
 
             onEvent(DeclineInvite) {
                 delete()
-                action(::tellUserAboutDecline)
+                unmanagedJob(::tellUserAboutDecline)
             }
         }
 
@@ -220,28 +221,28 @@ fun createGameStateMachine(collections: Collections): StateMachine<Game, Enum<*>
 
     }
 
-object CreateGame : VoidEventWithParameters<Game, CreateGameParams>(Game::class, true, CreateGameParams::class)
+object CreateGame : VoidEventWithParameters<Game, CreateGameParams>(Game::class, EXTERNAL, CreateGameParams::class)
 
-object AcceptInvite : InstanceEventNoParameters<Game>(Game::class, true)
+object AcceptInvite : InstanceEventNoParameters<Game>(Game::class, EXTERNAL)
 
-object DeclineInvite : InstanceEventNoParameters<Game>(Game::class, true)
+object DeclineInvite : InstanceEventNoParameters<Game>(Game::class, EXTERNAL)
 
-object MakeMove : InstanceEventWithParameters<Game, MakeMoveParams>(Game::class, true, MakeMoveParams::class)
+object MakeMove : InstanceEventWithParameters<Game, MakeMoveParams>(Game::class, EXTERNAL, MakeMoveParams::class)
 
-object ProposeDraw : InstanceEventNoParameters<Game>(Game::class, true)
+object ProposeDraw : InstanceEventNoParameters<Game>(Game::class, EXTERNAL)
 
-object Resign : InstanceEventNoParameters<Game>(Game::class, true)
+object Resign : InstanceEventNoParameters<Game>(Game::class, EXTERNAL)
 
-object AcceptDraw : InstanceEventNoParameters<Game>(Game::class, true)
+object AcceptDraw : InstanceEventNoParameters<Game>(Game::class, EXTERNAL)
 
-object DeclineDraw : InstanceEventNoParameters<Game>(Game::class, true)
+object DeclineDraw : InstanceEventNoParameters<Game>(Game::class, EXTERNAL)
 
-object PromotePawn : InstanceEventWithParameters<Game, PromotePawnParams>(Game::class, true, PromotePawnParams::class)
+object PromotePawn : InstanceEventWithParameters<Game, PromotePawnParams>(Game::class, EXTERNAL, PromotePawnParams::class)
 
 private val whitePlayerStates = setOf(WhiteTurn.name, WhiteHasProposedDraw.name, WhitePromotePawn.name)
 private val blackPlayerStates = setOf(BlackTurn.name, BlackHasProposedDraw.name, BlackPromotePawn.name)
 
-fun isValidMove(args: ArgForInstanceEvent<Game, MakeMoveParams, Ctx, Collections>): Validity {
+fun isValidMove(args: ArgForInstanceEvent<Game, MakeMoveParams, Ctx, Collections>): PropertyCollectionValidity {
     val move = CoordinateNotationMove.move(args.command.params.from, args.command.params.to)
     val validMoves = calculateAllValidMoves(fromMoves(args.model.props.moves), valueOf(args.model.state))
     return if (validMoves.contains(move)) Valid else Invalid("Illegal move")
@@ -288,7 +289,7 @@ fun blackCanPromotePawn(args: ArgForInstanceNonEvent<Game, Ctx, Collections>): B
 fun whiteCanPromotePawn(args: ArgForInstanceNonEvent<Game, Ctx, Collections>): Boolean =
     fromMoves(args.model.props.moves).canPromotePawn(Color.White)
 
-fun isPromotablePiece(args: ArgForInstanceEvent<Game, PromotePawnParams, Ctx, Collections>): Validity {
+fun isPromotablePiece(args: ArgForInstanceEvent<Game, PromotePawnParams, Ctx, Collections>): PropertyCollectionValidity {
     val piece = args.command.params.piece.string
     if (piece.length != 1) {
         return Invalid("Illegal piece")
@@ -322,7 +323,7 @@ fun updatePlayersRatings(args: ArgForInstanceNonEvent<Game, Ctx, Collections>): 
     )
 }
 
-fun onlyByCurrentPlayer(args: ArgForInstanceEvent<Game, Nothing?, Ctx, Collections>): Validity {
+fun onlyByCurrentPlayer(args: ArgForInstanceEvent<Game, Nothing?, Ctx, Collections>): PropertyCollectionValidity {
     val user = args.context.user ?: return Invalid("Must be logged in")
     if (whitePlayerStates.contains(args.model.state)) {
         return if (user.id == args.model.props.whitePlayer) Valid else Invalid("Wrong player")
@@ -333,7 +334,7 @@ fun onlyByCurrentPlayer(args: ArgForInstanceEvent<Game, Nothing?, Ctx, Collectio
     throw IllegalArgumentException()
 }
 
-fun onlyByNotCurrentPlayer(args: ArgForInstanceEvent<Game, Nothing?, Ctx, Collections>): Validity {
+fun onlyByNotCurrentPlayer(args: ArgForInstanceEvent<Game, Nothing?, Ctx, Collections>): PropertyCollectionValidity {
     val user = args.context.user ?: return Invalid("Must be logged in")
     if (blackPlayerStates.contains(args.model.state)) {
         return if (user.id == args.model.props.whitePlayer) Valid else Invalid("Wrong player")
@@ -344,16 +345,16 @@ fun onlyByNotCurrentPlayer(args: ArgForInstanceEvent<Game, Nothing?, Ctx, Collec
     throw IllegalArgumentException()
 }
 
-fun cannotPlayAgainstSelf(args: ArgForVoidEvent<Game, CreateGameParams, Ctx, Collections>): Validity {
+fun cannotPlayAgainstSelf(args: ArgForVoidEvent<Game, CreateGameParams, Ctx, Collections>): PropertyCollectionValidity {
     return if (args.command.params.whitePlayer == args.command.params.blackPlayer) Invalid("Players must be different") else Valid
 }
 
-fun onlyByBlackPlayer(args: ArgForInstanceEvent<Game, Nothing?, Ctx, Collections>): Validity {
+fun onlyByBlackPlayer(args: ArgForInstanceEvent<Game, Nothing?, Ctx, Collections>): PropertyCollectionValidity {
     val user = args.context.user ?: return Invalid("Must be logged in")
     return if (args.model.props.blackPlayer == user.id) Valid else Invalid()
 }
 
-fun playerMustBeWhite(args: ArgForVoidEvent<Game, CreateGameParams, Ctx, Collections>): Validity {
+fun playerMustBeWhite(args: ArgForVoidEvent<Game, CreateGameParams, Ctx, Collections>): PropertyCollectionValidity {
     val user = args.context.user ?: return Invalid("Must be logged in")
     return if (args.command.params.whitePlayer == user.id) Valid else Invalid("You must play white")
 }

@@ -1,5 +1,6 @@
 package dev.klerkframework.chess.klerk
 
+import dev.klerkframework.klerk.DefaultTranslation
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -9,7 +10,7 @@ class PositionTest {
 
     @Test
     fun illegalPosition() {
-        assertNotNull(Position.from("a".first(), 0).validate("test"))
+        assertNotNull(Position.from("a".first(), 0).validate("test", DefaultTranslation))
     }
 
     @Test

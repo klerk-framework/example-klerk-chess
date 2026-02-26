@@ -80,7 +80,7 @@ suspend fun createPlayers(klerk: Klerk<Ctx, Collections>) {
  */
 suspend fun initAI(klerk: Klerk<Ctx, Collections>) {
     log.info { "Initiating AI" }
-    val robot = klerk.read(Ctx.system()) { getFirstWhere(data.users.all) { it.props.name.string == "Mr. Robot" } }
+    val robot = klerk.read(Ctx.system()) { getFirstWhere(views.users.all) { it.props.name.string == "Mr. Robot" } }
     val context = Ctx.fromUser(robot)
 
     // make AI react to events
@@ -94,7 +94,7 @@ suspend fun initAI(klerk: Klerk<Ctx, Collections>) {
                 val game = (model.props as Game)
                 if (aiShouldAct(game, model.state, robot)) {
                     @Suppress("UNCHECKED_CAST")
-                    klerk.jobs.scheduleAction(CalculateAiAction(model.id as ModelID<Game>, klerk))
+                    klerk.jobs.schedule(CalculateAiAction(model.id as ModelID<Game>, klerk))
                 }
             }
         }
@@ -102,9 +102,9 @@ suspend fun initAI(klerk: Klerk<Ctx, Collections>) {
 
     // make AI aware of ongoing games
     klerk.read(context) {
-        list(data.games.all) { aiShouldAct(it.props, it.state, robot) }
+        list(views.games.all) { aiShouldAct(it.props, it.state, robot) }
     }.forEach {
-        klerk.jobs.scheduleAction(CalculateAiAction(it.id, klerk))
+        klerk.jobs.schedule(CalculateAiAction(it.id, klerk))
     }
 
 }

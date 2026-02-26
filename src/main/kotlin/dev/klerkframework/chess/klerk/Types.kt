@@ -1,8 +1,9 @@
 package dev.klerkframework.chess.klerk
 
-import dev.klerkframework.klerk.InvalidParametersProblem
+import dev.klerkframework.klerk.Translation
 import dev.klerkframework.klerk.datatypes.IntContainer
 import dev.klerkframework.klerk.datatypes.StringContainer
+import dev.klerkframework.klerk.validation.PropertyValidation
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
@@ -72,13 +73,13 @@ class Position(value: String) : StringContainer(value) {
         return "$column$row"
     }
 
-    override val validators: Set<() -> InvalidParametersProblem?> = setOf(::isSquareOnBoard)
+    override val validators: Set<(Translation) -> PropertyValidation> = setOf(::isSquareOnBoard)
 
-    private fun isSquareOnBoard(): InvalidParametersProblem? {
+    private fun isSquareOnBoard(translation: Translation): PropertyValidation {
         if (columns.contains(column) && row in 1..8) {
-            return null
+            return PropertyValidation.Valid
         }
-        return InvalidParametersProblem("Illegal position")
+        return PropertyValidation.Invalid("Illegal position")
     }
 
     companion object {

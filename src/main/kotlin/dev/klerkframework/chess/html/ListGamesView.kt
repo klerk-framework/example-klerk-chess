@@ -33,7 +33,7 @@ suspend fun listGames(call: ApplicationCall, klerk: Klerk<Ctx, Collections>, low
 
                 h2 { +"Top scores" }
                 table {
-                    list(data.users.all).sortedByDescending { it.props.score.int }.forEach { user ->
+                    list(views.users.all).sortedByDescending { it.props.score.int }.forEach { user ->
                         tr {
                             td { +"${user.props.name}" }
                             td { +"${user.props.score}" }
@@ -43,7 +43,7 @@ suspend fun listGames(call: ApplicationCall, klerk: Klerk<Ctx, Collections>, low
 
                 h2 { +"Games" }
                 ul {
-                    list(data.games.all).forEach { game ->
+                    list(views.games.all).forEach { game ->
                         li {
                             a(href = "/game/${game.id}") {
                                 +"${get(game.props.whitePlayer).props.name} vs ${get(game.props.blackPlayer).props.name} (${game.state})"

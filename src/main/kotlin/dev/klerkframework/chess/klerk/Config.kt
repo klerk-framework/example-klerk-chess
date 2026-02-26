@@ -5,18 +5,18 @@ import dev.klerkframework.chess.klerk.game.createGameStateMachine
 import dev.klerkframework.chess.klerk.user.User
 import dev.klerkframework.chess.klerk.user.createUserStateMachine
 import dev.klerkframework.klerk.*
-import dev.klerkframework.klerk.collection.ModelCollections
+import dev.klerkframework.klerk.collection.ModelViews
 import dev.klerkframework.klerk.storage.Persistence
 import dev.klerkframework.klerk.storage.SqlPersistence
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import org.sqlite.SQLiteDataSource
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 class Ctx(
     override val actor: ActorIdentity,
     override val auditExtra: String? = null,
     override val time: Instant = Clock.System.now(),
-    override val translator: Translator = DefaultTranslator(),
+    override val translation: Translation = DefaultTranslation,
     val user: Model<User>? = null
 ) : KlerkContext {
 
@@ -35,12 +35,12 @@ class Ctx(
 }
 
 data class Collections(
-    val users: ModelCollections<User, Ctx>,
-    val games: ModelCollections<Game, Ctx>,
+    val users: ModelViews<User, Ctx>,
+    val games: ModelViews<Game, Ctx>,
 )
 
 fun createConfig(): Config<Ctx, Collections> {
-    val collections = Collections(ModelCollections(), ModelCollections())
+    val collections = Collections(ModelViews(), ModelViews())
     return ConfigBuilder<Ctx, Collections>(collections).build {
         persistence(createPersistence())
         managedModels {
@@ -48,7 +48,7 @@ fun createConfig(): Config<Ctx, Collections> {
             model(Game::class, createGameStateMachine(collections), collections.games)
         }
         apply(createAuthorizationRules())
-        contextProvider { actor -> Ctx(actor) }
+        systemContextProvider { systemIdentity -> Ctx(systemIdentity) }
     }
 }
 

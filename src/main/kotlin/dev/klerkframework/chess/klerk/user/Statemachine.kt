@@ -11,6 +11,8 @@ import dev.klerkframework.chess.klerk.Score
 import dev.klerkframework.chess.klerk.user.UserStates.*
 import dev.klerkframework.klerk.ArgForInstanceEvent
 import dev.klerkframework.klerk.ArgForVoidEvent
+import dev.klerkframework.klerk.EventVisibility
+import dev.klerkframework.klerk.EventVisibility.EXTERNAL
 
 enum class UserStates {
     Created
@@ -41,9 +43,9 @@ fun createUserStateMachine(): StateMachine<User, Enum<*>, Ctx, Collections> =
 
     }
 
-object CreateUser : VoidEventWithParameters<User, CreateUserParams>(User::class, true, CreateUserParams::class)
-object DeleteUser : InstanceEventNoParameters<User>(User::class, true)
-object UpdateScore : InstanceEventWithParameters<User, UpdateScoreParams>(User::class, false, UpdateScoreParams::class)
+object CreateUser : VoidEventWithParameters<User, CreateUserParams>(User::class, EXTERNAL, CreateUserParams::class)
+object DeleteUser : InstanceEventNoParameters<User>(User::class, EXTERNAL)
+object UpdateScore : InstanceEventWithParameters<User, UpdateScoreParams>(User::class, EXTERNAL, UpdateScoreParams::class)
 
 fun createUser(args: ArgForVoidEvent<User, CreateUserParams, Ctx, Collections>): User {
     return User(name = args.command.params.name, score = Score(0))

@@ -23,7 +23,8 @@ fun Application.configureRouting(klerk: Klerk<Ctx, Collections>) {
         contextProvider = ::contextFromCall,
         showOptionalParameters = ::showOptionalParameters,
         cssPath = "https://unpkg.com/almond.css@latest/dist/almond.min.css",
-        knownAlgorithms = setOf(IsAutomaticDraw)
+        knownAlgorithms = setOf(IsAutomaticDraw),
+        canSeeAdminUI = ::canSeeAdminUI
     )
 
     routing {
@@ -52,7 +53,7 @@ internal fun showOptionalParameters(event: EventReference) = false
  */
 suspend fun ApplicationCall.context(klerk: Klerk<Ctx, Collections>): Ctx {
     val user = klerk.read(Ctx.system()) {
-        getFirstWhere(data.users.all) { it.props.name.valueWithoutAuthorization == "Alice" }
+        getFirstWhere(views.users.all) { it.props.name.valueWithoutAuthorization == "Alice" }
     }
     return Ctx.fromUser(user)
 }
@@ -64,8 +65,10 @@ suspend fun ApplicationCall.context(klerk: Klerk<Ctx, Collections>): Ctx {
  * user Alice.
  */
 suspend fun GraphQLContext.context(klerk: Klerk<Ctx, Collections>): Ctx {
-    val user = klerk.read(Ctx.authenticationIdentity()) {
-        getFirstWhere(data.users.all) { it.props.name.valueWithoutAuthorization == "Alice" }
+    val user = klerk.read(Ctx.system()) {
+        getFirstWhere(views.users.all) { it.props.name.valueWithoutAuthorization == "Alice" }
     }
     return Ctx.fromUser(user)
 }
+
+suspend fun canSeeAdminUI(ctx: Ctx): Boolean = true
