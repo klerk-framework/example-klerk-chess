@@ -11,7 +11,7 @@ import dev.klerkframework.chess.klerk.user.CreateUser
 import dev.klerkframework.chess.klerk.user.CreateUserParams
 import dev.klerkframework.chess.klerk.user.User
 import dev.klerkframework.chess.plugins.configureRouting
-import dev.klerkframework.chess.plugins.context
+import dev.klerkframework.chess.plugins.ctx
 import dev.klerkframework.klerk.Klerk
 import dev.klerkframework.klerk.Model
 import dev.klerkframework.klerk.ModelID
@@ -43,7 +43,7 @@ fun main() {
         initAI(klerk)
     }
 
-    suspend fun graphQlContextProvider(graphQlContext: GraphQLContext) = graphQlContext.context(klerk)
+    suspend fun graphQlContextProvider(graphQlContext: GraphQLContext) = graphQlContext.ctx(klerk)
 
     embeddedServer(Netty, port = 8080, host = "0.0.0.0", module = {
         install(GraphQL) {

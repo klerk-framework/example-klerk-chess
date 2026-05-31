@@ -28,7 +28,7 @@ class CalculateAiAction(val gameId: ModelID<Game>, val klerk: Klerk<Ctx, Collect
             delay(4000)
 
             val (game, blackPlayer) = klerk.read(Ctx.system()) {
-                val gameId = ModelID.from<Game>(metadata.parameters)
+                val gameId = ModelID<Game>(metadata.parameters.toInt())
                 val game = get(gameId)
                 val blackPlayer = get(game.props.blackPlayer)
                 Pair(game, blackPlayer)

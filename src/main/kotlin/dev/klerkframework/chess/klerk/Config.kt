@@ -8,6 +8,8 @@ import dev.klerkframework.klerk.*
 import dev.klerkframework.klerk.collection.ModelViews
 import dev.klerkframework.klerk.storage.Persistence
 import dev.klerkframework.klerk.storage.SqlPersistence
+import dev.klerkframework.web.assets.AssetsPlugin
+import kotlinx.html.emptyMap
 import org.sqlite.SQLiteDataSource
 import kotlin.time.Clock
 import kotlin.time.Instant
@@ -49,7 +51,7 @@ fun createConfig(): Config<Ctx, Collections> {
         }
         apply(createAuthorizationRules())
         systemContextProvider { systemIdentity -> Ctx(systemIdentity) }
-    }
+    }.withPlugin(AssetsPlugin(emptySet()))
 }
 
 private fun createPersistence(): Persistence {

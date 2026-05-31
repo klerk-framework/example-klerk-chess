@@ -9,13 +9,12 @@ import dev.klerkframework.chess.klerk.game.Board
 import dev.klerkframework.chess.klerk.game.Game
 import dev.klerkframework.chess.klerk.game.MakeMove
 import dev.klerkframework.chess.klerk.game.MakeMoveParams
-import dev.klerkframework.chess.plugins.context
+import dev.klerkframework.chess.plugins.ctx
 import dev.klerkframework.klerk.*
 import dev.klerkframework.klerk.command.Command
 import dev.klerkframework.klerk.command.ProcessingOptions
 import dev.klerkframework.klerk.command.CommandToken
-import dev.klerkframework.web.LowCodeConfig
-import dev.klerkframework.web.LowCodeCreateEvent
+import dev.klerkframework.web.KlerkWeb
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.html.*
@@ -30,9 +29,9 @@ private data class RenderGameData(
     val possibleEvents: Set<EventReference>
 )
 
-suspend fun renderGame(call: ApplicationCall, klerk: Klerk<Ctx, Collections>, lowCodeConfig: LowCodeConfig<Ctx>) {
-    val context = call.context(klerk)
-    val gameId = ModelID.from<Game>(requireNotNull(call.parameters["id"]))
+suspend fun renderGame(call: ApplicationCall, klerk: Klerk<Ctx, Collections>, klerkWeb: KlerkWeb<Ctx, Collections>) {
+    val context = call.ctx(klerk)
+    val gameId = ModelID<Game>(requireNotNull(call.parameters["id"]).toInt())
     val dryRunMove = moveInQueryParameters(call)
     val dryRunResult = if (dryRunMove == null) {
         null
@@ -102,7 +101,10 @@ suspend fun renderGame(call: ApplicationCall, klerk: Klerk<Ctx, Collections>, lo
                     renderGameData.possibleEvents
                         .filter { it != MakeMove.id }   // we handle MakeMove separately
                         .forEach {
-                            apply(LowCodeCreateEvent.renderButton(it, klerk, renderGameData.game.id, lowCodeConfig, buttonTargets, context))
+                            apply(klerkWeb.autoButtons.render(it, renderGameData.game.id, context,
+                                onCancelPath = "/",
+                                onSuccessAndModelExistPath = "/game/{id}",
+                                onErrorPath = "/"))
                             br()
                         }
 
@@ -307,13 +309,13 @@ private fun includeStyle() = """
     </style>"""
 
 suspend fun confirmMove(call: ApplicationCall, klerk: Klerk<Ctx, Collections>) {
-    val gameId = ModelID.from<Game>(requireNotNull(call.parameters["id"]))
+    val gameId = ModelID<Game>(requireNotNull(call.parameters["id"]).toInt())
     val moveString = call.receiveParameters()["move"]
     moveString?.let {
         val move = CoordinateNotationMove(it)
         klerk.handle(
             Command(MakeMove, gameId, MakeMoveParams(move.from, move.to)),
-            call.context(klerk),
+            call.ctx(klerk),
             ProcessingOptions(CommandToken.simple())
         )
 
@@ -323,8 +325,8 @@ suspend fun confirmMove(call: ApplicationCall, klerk: Klerk<Ctx, Collections>) {
 
 suspend fun handleSse(call: ApplicationCall, klerk: Klerk<Ctx, Collections>) {
     //There is better support for SSE in ktor 3
-    val id = ModelID.from<Any>(requireNotNull(call.parameters["id"]))
-    val events = klerk.models.subscribe(call.context(klerk), id)
+    val id = ModelID<Any>(requireNotNull(call.parameters["id"]).toInt())
+    val events = klerk.models.subscribe(call.ctx(klerk), id)
     call.response.cacheControl(CacheControl.NoCache(null))
     call.respondTextWriter(contentType = ContentType.Text.EventStream) {
         events.collect {

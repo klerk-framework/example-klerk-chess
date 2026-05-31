@@ -10,26 +10,27 @@ import dev.klerkframework.chess.klerk.Collections
 import dev.klerkframework.chess.klerk.Ctx
 import dev.klerkframework.klerk.EventReference
 import dev.klerkframework.klerk.Klerk
-import dev.klerkframework.web.LowCodeConfig
-import dev.klerkframework.web.LowCodeMain
+import dev.klerkframework.web.DefaultPathProvider
+import dev.klerkframework.web.KlerkWeb
 import graphql.GraphQLContext
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
 
 fun Application.configureRouting(klerk: Klerk<Ctx, Collections>) {
-    suspend fun contextFromCall(call: ApplicationCall): Ctx = call.context(klerk)
-    val lowCodeConfig = LowCodeConfig(
-        basePath = "/admin",
-        contextProvider = ::contextFromCall,
-        showOptionalParameters = ::showOptionalParameters,
-        cssPath = "https://unpkg.com/almond.css@latest/dist/almond.min.css",
-        knownAlgorithms = setOf(IsAutomaticDraw),
-        canSeeAdminUI = ::canSeeAdminUI
+
+    val pathProvider = DefaultPathProvider(externalCssPath = "https://unpkg.com/almond.css@latest/dist/almond.min.css")
+
+    val klerkWeb = KlerkWeb(
+        klerk,
+        ApplicationCall::ctx,
+        pathProvider = pathProvider,
+        classProvider = null,
+        useTableForDetails = false
     )
 
     routing {
-        get("/") { listGames(call, klerk, lowCodeConfig) }
-        get("/game/{id}") { renderGame(call, klerk, lowCodeConfig) }
+        get("/") { listGames(call, klerk, klerkWeb) }
+        get("/game/{id}") { renderGame(call, klerk, klerkWeb) }
         post("/game/{id}") { confirmMove(call, klerk) }
         get("/sse/{id}") { handleSse(call, klerk) }
 
@@ -40,8 +41,7 @@ fun Application.configureRouting(klerk: Klerk<Ctx, Collections>) {
         graphQLSDLRoute()
 
         // The auto-generated Admin UI
-        val autoAdminUI = LowCodeMain(klerk, lowCodeConfig)
-        apply(autoAdminUI.registerRoutes())
+        apply(klerkWeb.generateRoutes())
     }
 }
 
@@ -51,7 +51,7 @@ internal fun showOptionalParameters(event: EventReference) = false
  * Creates a Context from a Call.
  * As authentication is something that should not be handled by Klerk, we will just fake it here.
  */
-suspend fun ApplicationCall.context(klerk: Klerk<Ctx, Collections>): Ctx {
+suspend fun ApplicationCall.ctx(klerk: Klerk<Ctx, Collections>): Ctx {
     val user = klerk.read(Ctx.system()) {
         getFirstWhere(views.users.all) { it.props.name.valueWithoutAuthorization == "Alice" }
     }
@@ -64,7 +64,7 @@ suspend fun ApplicationCall.context(klerk: Klerk<Ctx, Collections>): Ctx {
  * In a real app we would use a session token or similar to figure out who the user is. Here, we always just use the
  * user Alice.
  */
-suspend fun GraphQLContext.context(klerk: Klerk<Ctx, Collections>): Ctx {
+suspend fun GraphQLContext.ctx(klerk: Klerk<Ctx, Collections>): Ctx {
     val user = klerk.read(Ctx.system()) {
         getFirstWhere(views.users.all) { it.props.name.valueWithoutAuthorization == "Alice" }
     }

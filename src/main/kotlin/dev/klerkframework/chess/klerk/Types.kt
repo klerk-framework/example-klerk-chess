@@ -1,6 +1,7 @@
 package dev.klerkframework.chess.klerk
 
 import dev.klerkframework.klerk.Translation
+import dev.klerkframework.klerk.datatypes.DurationContainer
 import dev.klerkframework.klerk.datatypes.IntContainer
 import dev.klerkframework.klerk.datatypes.StringContainer
 import dev.klerkframework.klerk.validation.PropertyValidation
@@ -14,14 +15,7 @@ class UserName(value: String) : StringContainer(value) {
     override val maxLines = 1
 }
 
-class PlayTime(value: Int) : IntContainer(value) {
-    override val min = 0
-    override val max = Int.MAX_VALUE
-
-    constructor(duration: Duration) : this(duration.inWholeSeconds.toInt())
-
-    val duration = value.seconds
-
+class PlayTime(value: Duration) : DurationContainer(value) {
     override fun toString() = duration.toString()
 }
 

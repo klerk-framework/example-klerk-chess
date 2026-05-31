@@ -3,18 +3,16 @@ package dev.klerkframework.chess.html
 import dev.klerkframework.chess.klerk.Collections
 import dev.klerkframework.chess.klerk.Ctx
 import dev.klerkframework.chess.klerk.game.Game
-import dev.klerkframework.chess.plugins.context
+import dev.klerkframework.chess.plugins.ctx
 import dev.klerkframework.klerk.Klerk
-import dev.klerkframework.web.ButtonTargets
-import dev.klerkframework.web.LowCodeConfig
-import dev.klerkframework.web.LowCodeCreateEvent
+import dev.klerkframework.web.KlerkWeb
 import io.ktor.server.application.*
 import io.ktor.server.html.*
 import kotlinx.html.*
 
-suspend fun listGames(call: ApplicationCall, klerk: Klerk<Ctx, Collections>, lowCodeConfig: LowCodeConfig<Ctx>) {
-    val context = call.context(klerk)
-    klerk.readSuspend(context) {
+suspend fun listGames(call: ApplicationCall, klerk: Klerk<Ctx, Collections>, klerkWeb: KlerkWeb<Ctx, Collections>) {
+    val context = call.ctx(klerk)
+    klerk.readSuspend(call::ctx) {
         call.respondHtml {
             head {
                 title = "Chess"
@@ -54,12 +52,13 @@ suspend fun listGames(call: ApplicationCall, klerk: Klerk<Ctx, Collections>, low
 
                 h2 { +"Actions" }
                 getPossibleVoidEvents(Game::class).forEach {
-                    apply(LowCodeCreateEvent.renderButton(it, klerk, null, lowCodeConfig, buttonTargets, context))
+                    apply(klerkWeb.autoButtons.render(it, null, context,
+                        onCancelPath = "/",
+                        onSuccessAndModelExistPath = "/game/{id}",
+                        onErrorPath = "/"))
                     br()
                 }
             }
         }
     }
 }
-
-val buttonTargets = ButtonTargets(back = "/", model = "/game/{id}", error = "/")
