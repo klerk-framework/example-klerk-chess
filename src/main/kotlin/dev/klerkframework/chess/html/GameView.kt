@@ -15,6 +15,7 @@ import dev.klerkframework.klerk.command.Command
 import dev.klerkframework.klerk.command.ProcessingOptions
 import dev.klerkframework.klerk.command.CommandToken
 import dev.klerkframework.web.KlerkWeb
+import dev.klerkframework.web.eventButton
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.html.*
@@ -98,15 +99,19 @@ suspend fun renderGame(call: ApplicationCall, klerk: Klerk<Ctx, Collections>, kl
                 // actions
                 div {
                     h3 { +"Actions" }
-                    renderGameData.possibleEvents
-                        .filter { it != MakeMove.id }   // we handle MakeMove separately
-                        .forEach {
-                            apply(klerkWeb.autoButtons.render(it, renderGameData.game.id, context,
-                                onCancelPath = "/",
-                                onSuccessAndModelExistPath = "/game/{id}",
-                                onErrorPath = "/"))
-                            br()
-                        }
+                    with(klerkWeb.support) {
+                        renderGameData.possibleEvents
+                            .filter { it != MakeMove.id }   // we handle MakeMove separately
+                            .forEach {
+                                eventButton(
+                                    it, renderGameData.game.id, context,
+                                    onCancelPath = "/",
+                                    onSuccessAndModelExistPath = "/game/{id}",
+                                    onErrorPath = "/"
+                                )
+                                br()
+                            }
+                    }
 
                     if (dryRunMove != null && dryRunResult is CommandResult.Success) {
                         form(action = "/game/${gameId}", method = FormMethod.post) {

@@ -4,7 +4,7 @@ val klerkBomVersion: String by project
 val sqliteJdbcVersion: String by project
 
 plugins {
-    kotlin("jvm") version "2.3.10"
+    kotlin("jvm") version "2.4.10"
     id("io.ktor.plugin") version "3.1.2"
     id("org.jetbrains.kotlin.plugin.serialization") version "2.0.21"
 }
@@ -23,9 +23,9 @@ dependencies {
     implementation(platform("dev.klerkframework:klerk-bom:$klerkBomVersion"))
     implementation("dev.klerkframework:klerk")
     implementation("dev.klerkframework:klerk-web:1.0.0-alpha.2-SNAPSHOT")
+    implementation("dev.klerkframework:klerk-mcp:0.1.0-SNAPSHOT")
     implementation("dev.klerkframework:klerk-graphql")
 
-    implementation("com.expediagroup:graphql-kotlin-ktor-server:9.1.0")   // TODO: remove since it is provided as an API
 
     implementation("io.github.microutils:kotlin-logging-jvm:$kotlinLoggingVersion")
     implementation("ch.qos.logback:logback-classic:$logbackVersion")

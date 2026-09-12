@@ -1,11 +1,13 @@
 package dev.klerkframework.chess.klerk
 
+import dev.klerkframework.chess.CalculateAiAction
 import dev.klerkframework.chess.klerk.game.Game
 import dev.klerkframework.chess.klerk.game.createGameStateMachine
 import dev.klerkframework.chess.klerk.user.User
 import dev.klerkframework.chess.klerk.user.createUserStateMachine
 import dev.klerkframework.klerk.*
 import dev.klerkframework.klerk.collection.ModelViews
+import dev.klerkframework.klerk.storage.AttachedBlobStore
 import dev.klerkframework.klerk.storage.Persistence
 import dev.klerkframework.klerk.storage.SqlPersistence
 import dev.klerkframework.web.assets.AssetsPlugin
@@ -16,11 +18,17 @@ import kotlin.time.Instant
 
 class Ctx(
     override val actor: ActorIdentity,
-    override val auditExtra: String? = null,
+    override val eventLogExtra: String? = null,
     override val time: Instant = Clock.System.now(),
     override val translation: Translation = DefaultTranslation,
     val user: Model<User>? = null
 ) : KlerkContext {
+
+    /**
+     * The acting user, if any. Unlike [user] this also works when the actor was rebuilt from storage (e.g. in a job),
+     * where only the id is available.
+     */
+    val userId: ModelID<*>? get() = user?.id ?: actor.id
 
     companion object {
         fun fromUser(user: Model<User>): Ctx {
@@ -41,18 +49,30 @@ data class Collections(
     val games: ModelViews<Game, Ctx>,
 )
 
-fun createConfig(): Config<Ctx, Collections> {
+fun createConfig(): Specification<Ctx, Collections> {
     val collections = Collections(ModelViews(), ModelViews())
-    return ConfigBuilder<Ctx, Collections>(collections).build {
-        persistence(createPersistence())
+    return SpecificationBuilder<Ctx, Collections>(collections).build {
         managedModels {
             model(User::class, createUserStateMachine(), collections.users)
             model(Game::class, createGameStateMachine(collections), collections.games)
         }
-        apply(createAuthorizationRules())
+        jobs {
+            register(CalculateAiAction)
+        }
+        //apply(createAuthorizationRules())
+        authorization {
+            apply(insecureAllowEverything())   // TODO
+        }
         systemContextProvider { systemIdentity -> Ctx(systemIdentity) }
+        jobContextProvider(::jobContext)
     }.withPlugin(AssetsPlugin(emptySet()))
 }
+
+/** A job step runs as the actor that scheduled it, which arrives as a plain id — see [Ctx.userId]. */
+fun jobContext(request: JobContextRequest): Ctx = Ctx(actor = request.actor, time = request.time)
+
+fun createSettings(): KlerkSettings =
+    KlerkSettings(persistence = createPersistence(), attachedBlobStore = AttachedBlobStore.Database)
 
 private fun createPersistence(): Persistence {
     val dbFilePath =

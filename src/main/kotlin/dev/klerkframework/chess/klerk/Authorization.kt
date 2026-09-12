@@ -8,7 +8,7 @@ import dev.klerkframework.klerk.NegativeAuthorization.Pass
 import dev.klerkframework.klerk.PositiveAuthorization.Allow
 import dev.klerkframework.klerk.PositiveAuthorization.NoOpinion
 
-fun createAuthorizationRules(): ConfigBuilder<Ctx, Collections>.() -> Unit = {
+fun createAuthorizationRules(): SpecificationBuilder<Ctx, Collections>.() -> Unit = {
     authorization {
         commands {
             positive {

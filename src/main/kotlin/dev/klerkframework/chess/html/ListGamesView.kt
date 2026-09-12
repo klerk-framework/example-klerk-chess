@@ -4,8 +4,10 @@ import dev.klerkframework.chess.klerk.Collections
 import dev.klerkframework.chess.klerk.Ctx
 import dev.klerkframework.chess.klerk.game.Game
 import dev.klerkframework.chess.plugins.ctx
+import dev.klerkframework.klerk.collection.asSequence
 import dev.klerkframework.klerk.Klerk
 import dev.klerkframework.web.KlerkWeb
+import dev.klerkframework.web.eventButton
 import io.ktor.server.application.*
 import io.ktor.server.html.*
 import kotlinx.html.*
@@ -31,7 +33,7 @@ suspend fun listGames(call: ApplicationCall, klerk: Klerk<Ctx, Collections>, kle
 
                 h2 { +"Top scores" }
                 table {
-                    list(views.users.all).sortedByDescending { it.props.score.int }.forEach { user ->
+                    views.users.all.asSequence().sortedByDescending { it.props.score.int }.forEach { user ->
                         tr {
                             td { +"${user.props.name}" }
                             td { +"${user.props.score}" }
@@ -41,7 +43,7 @@ suspend fun listGames(call: ApplicationCall, klerk: Klerk<Ctx, Collections>, kle
 
                 h2 { +"Games" }
                 ul {
-                    list(views.games.all).forEach { game ->
+                    views.games.all.asSequence().forEach { game ->
                         li {
                             a(href = "/game/${game.id}") {
                                 +"${get(game.props.whitePlayer).props.name} vs ${get(game.props.blackPlayer).props.name} (${game.state})"
@@ -51,12 +53,16 @@ suspend fun listGames(call: ApplicationCall, klerk: Klerk<Ctx, Collections>, kle
                 }
 
                 h2 { +"Actions" }
-                getPossibleVoidEvents(Game::class).forEach {
-                    apply(klerkWeb.autoButtons.render(it, null, context,
-                        onCancelPath = "/",
-                        onSuccessAndModelExistPath = "/game/{id}",
-                        onErrorPath = "/"))
-                    br()
+                with(klerkWeb.support) {
+                    getPossibleVoidEvents(Game::class).forEach {
+                        eventButton(
+                            it, null, context,
+                            onCancelPath = "/",
+                            onSuccessAndModelExistPath = "/game/{id}",
+                            onErrorPath = "/"
+                        )
+                        br()
+                    }
                 }
             }
         }

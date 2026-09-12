@@ -1,10 +1,10 @@
 package dev.klerkframework.chess
 
-import com.expediagroup.graphql.server.ktor.GraphQL
 import dev.klerkframework.chess.klerk.Collections
 import dev.klerkframework.chess.klerk.Ctx
 import dev.klerkframework.chess.klerk.UserName
 import dev.klerkframework.chess.klerk.createConfig
+import dev.klerkframework.chess.klerk.createSettings
 import dev.klerkframework.chess.klerk.game.Game
 import dev.klerkframework.chess.klerk.game.GameState.*
 import dev.klerkframework.chess.klerk.user.CreateUser
@@ -12,19 +12,33 @@ import dev.klerkframework.chess.klerk.user.CreateUserParams
 import dev.klerkframework.chess.klerk.user.User
 import dev.klerkframework.chess.plugins.configureRouting
 import dev.klerkframework.chess.plugins.ctx
+import dev.klerkframework.klerk.collection.asSequence
+import dev.klerkframework.klerk.collection.isEmpty
 import dev.klerkframework.klerk.Klerk
 import dev.klerkframework.klerk.Model
 import dev.klerkframework.klerk.ModelID
 import dev.klerkframework.klerk.command.Command
 import dev.klerkframework.klerk.command.CommandToken
 import dev.klerkframework.klerk.command.ProcessingOptions
-import dev.klerkframework.graphql.EventMutationService
-import dev.klerkframework.graphql.GenericQuery
+import dev.klerkframework.graphql.installKlerkGraphQL
+import dev.klerkframework.klerk.Unauthenticated
 import dev.klerkframework.klerk.read.ModelModification
+import dev.klerkframework.mcp.createMcpServer
 import graphql.GraphQLContext
+import io.ktor.http.ContentType
+import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.*
+import io.ktor.server.application.ApplicationCall
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
+import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.response.respondText
+import io.ktor.server.routing.get
+import io.ktor.server.routing.port
+import io.ktor.server.routing.routing
+import io.modelcontextprotocol.kotlin.sdk.server.mcp
+import io.modelcontextprotocol.kotlin.sdk.server.mcpStatelessStreamableHttp
+import io.modelcontextprotocol.kotlin.sdk.types.McpJson
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -34,26 +48,30 @@ import mu.KotlinLogging
 private val log = KotlinLogging.logger {}
 
 fun main() {
-    val klerk = Klerk.create(createConfig())
+    val klerk = Klerk.create(createConfig(), createSettings())
     runBlocking {
         klerk.meta.start()
-        if (klerk.meta.modelsCount == 0) {
+        if (klerk.read(Ctx.system()) { views.users.all.isEmpty() }) {
             createPlayers(klerk)
         }
         initAI(klerk)
     }
 
+    val mcpServer = createMcpServer(klerk, {
+        val user = klerk.read(Ctx.system()) {
+            views.users.all.asSequence().first { it.props.name.valueWithoutAuthorization == "Alice" }
+        }
+        Ctx.fromUser(user)
+    }, "Chess application", "1.0.0")
+
     suspend fun graphQlContextProvider(graphQlContext: GraphQLContext) = graphQlContext.ctx(klerk)
 
     embeddedServer(Netty, port = 8080, host = "0.0.0.0", module = {
-        install(GraphQL) {
-            schema {
-                packages = listOf("dev.klerkframework.graphql")
-                queries = listOf(GenericQuery(klerk, ::graphQlContextProvider))
-                mutations = listOf(EventMutationService(klerk, ::graphQlContextProvider))
-            }
-        }
+        installKlerkGraphQL(klerk, ::graphQlContextProvider)
         configureRouting(klerk)
+        mcpStatelessStreamableHttp {
+            mcpServer
+        }
     }).start(wait = true)
 }
 
@@ -80,7 +98,9 @@ suspend fun createPlayers(klerk: Klerk<Ctx, Collections>) {
  */
 suspend fun initAI(klerk: Klerk<Ctx, Collections>) {
     log.info { "Initiating AI" }
-    val robot = klerk.read(Ctx.system()) { getFirstWhere(views.users.all) { it.props.name.string == "Mr. Robot" } }
+    val robot = klerk.read(Ctx.system()) {
+        views.users.all.asSequence().first { it.props.name.string == "Mr. Robot" }
+    }
     val context = Ctx.fromUser(robot)
 
     // make AI react to events
@@ -93,8 +113,15 @@ suspend fun initAI(klerk: Klerk<Ctx, Collections>) {
                 }
                 val game = (model.props as Game)
                 if (aiShouldAct(game, model.state, robot)) {
+                    // A fresh context, since Ctx.time is stamped when the context is created.
+                    val aiContext = Ctx.fromUser(robot)
                     @Suppress("UNCHECKED_CAST")
-                    klerk.jobs.schedule(CalculateAiAction(model.id as ModelID<Game>, klerk))
+                    klerk.jobs.schedule(
+                        CalculateAiAction.declare(
+                            AiCursor(model.id as ModelID<Game>),
+                            scheduleAt = aiContext.time + AI_THINKING_TIME,
+                        ), aiContext
+                    )
                 }
             }
         }
@@ -102,9 +129,13 @@ suspend fun initAI(klerk: Klerk<Ctx, Collections>) {
 
     // make AI aware of ongoing games
     klerk.read(context) {
-        list(views.games.all) { aiShouldAct(it.props, it.state, robot) }
+        views.games.all.asSequence().filter { aiShouldAct(it.props, it.state, robot) }.toList()
     }.forEach {
-        klerk.jobs.schedule(CalculateAiAction(it.id, klerk))
+        val aiContext = Ctx.fromUser(robot)
+        klerk.jobs.schedule(
+            CalculateAiAction.declare(AiCursor(it.id), scheduleAt = aiContext.time + AI_THINKING_TIME),
+            aiContext
+        )
     }
 
 }

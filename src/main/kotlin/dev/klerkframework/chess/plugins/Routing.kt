@@ -1,31 +1,28 @@
 package dev.klerkframework.chess.plugins
 
-import com.expediagroup.graphql.server.ktor.graphQLGetRoute
-import com.expediagroup.graphql.server.ktor.graphQLPostRoute
-import com.expediagroup.graphql.server.ktor.graphQLSDLRoute
-import com.expediagroup.graphql.server.ktor.graphiQLRoute
-import dev.klerkframework.chess.klerk.game.IsAutomaticDraw
 import dev.klerkframework.chess.html.*
 import dev.klerkframework.chess.klerk.Collections
 import dev.klerkframework.chess.klerk.Ctx
+import dev.klerkframework.chess.klerk.game.Game
+import dev.klerkframework.chess.klerk.user.User
+import dev.klerkframework.graphql.klerkGraphQLRoutes
+import dev.klerkframework.klerk.collection.asSequence
 import dev.klerkframework.klerk.EventReference
 import dev.klerkframework.klerk.Klerk
-import dev.klerkframework.web.DefaultPathProvider
 import dev.klerkframework.web.KlerkWeb
+import dev.klerkframework.web.Layout
+import dev.klerkframework.web.klerkWebRoutes
 import graphql.GraphQLContext
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
 
 fun Application.configureRouting(klerk: Klerk<Ctx, Collections>) {
 
-    val pathProvider = DefaultPathProvider(externalCssPath = "https://unpkg.com/almond.css@latest/dist/almond.min.css")
-
     val klerkWeb = KlerkWeb(
         klerk,
         ApplicationCall::ctx,
-        pathProvider = pathProvider,
-        classProvider = null,
-        useTableForDetails = false
+        canSeeAdminUI = ::canSeeAdminUI,
+        layout = Layout(externalCssPath = "https://unpkg.com/almond.css@latest/dist/almond.min.css"),
     )
 
     routing {
@@ -34,14 +31,10 @@ fun Application.configureRouting(klerk: Klerk<Ctx, Collections>) {
         post("/game/{id}") { confirmMove(call, klerk) }
         get("/sse/{id}") { handleSse(call, klerk) }
 
-        // GraphQL
-        graphQLPostRoute()
-        graphQLGetRoute()
-        graphiQLRoute()
-        graphQLSDLRoute()
+        klerkGraphQLRoutes()
 
-        // The auto-generated Admin UI
-        apply(klerkWeb.generateRoutes())
+        // The auto-generated Admin UI and model pages
+        klerkWebRoutes(klerkWeb, setOf(Game::class, User::class))
     }
 }
 
@@ -53,7 +46,7 @@ internal fun showOptionalParameters(event: EventReference) = false
  */
 suspend fun ApplicationCall.ctx(klerk: Klerk<Ctx, Collections>): Ctx {
     val user = klerk.read(Ctx.system()) {
-        getFirstWhere(views.users.all) { it.props.name.valueWithoutAuthorization == "Alice" }
+        views.users.all.asSequence().first { it.props.name.valueWithoutAuthorization == "Alice" }
     }
     return Ctx.fromUser(user)
 }
@@ -66,7 +59,7 @@ suspend fun ApplicationCall.ctx(klerk: Klerk<Ctx, Collections>): Ctx {
  */
 suspend fun GraphQLContext.ctx(klerk: Klerk<Ctx, Collections>): Ctx {
     val user = klerk.read(Ctx.system()) {
-        getFirstWhere(views.users.all) { it.props.name.valueWithoutAuthorization == "Alice" }
+        views.users.all.asSequence().first { it.props.name.valueWithoutAuthorization == "Alice" }
     }
     return Ctx.fromUser(user)
 }

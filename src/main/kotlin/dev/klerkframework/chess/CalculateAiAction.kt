@@ -3,71 +3,59 @@ package dev.klerkframework.chess
 import dev.klerkframework.chess.klerk.Collections
 import dev.klerkframework.chess.klerk.Ctx
 import dev.klerkframework.chess.klerk.game.*
-import dev.klerkframework.klerk.Klerk
 import dev.klerkframework.klerk.ModelID
 import dev.klerkframework.klerk.command.Command
-import dev.klerkframework.klerk.command.CommandToken
-import dev.klerkframework.klerk.command.ProcessingOptions
-import dev.klerkframework.klerk.job.Job
-import dev.klerkframework.klerk.job.JobMetadata
-import dev.klerkframework.klerk.job.JobResult
-import dev.klerkframework.klerk.job.RunnableJob
-import kotlinx.coroutines.delay
+import dev.klerkframework.klerk.job.*
+import kotlinx.serialization.Serializable
 import mu.KotlinLogging
 import kotlin.random.Random
+import kotlin.time.Duration.Companion.seconds
 
-class CalculateAiAction(val gameId: ModelID<Game>, val klerk: Klerk<Ctx, Collections>) : RunnableJob<Ctx, Collections>() {
-    override val maxRetries: Int = 0
-    override val parameters: String = gameId.toString()
+/** How long the AI pretends to think before it acts. */
+val AI_THINKING_TIME = 4.seconds
 
-    companion object {
-        private val log = KotlinLogging.logger {}
-        private val random = Random(seed = 1)
+@Serializable
+data class AiCursor(val gameId: ModelID<Game>)
 
-        suspend fun run(metadata: JobMetadata, klerk: Klerk<Ctx, Collections>): JobResult {
-            delay(4000)
+object CalculateAiAction : JobType.Local<AiCursor, Ctx, Collections>() {
 
-            val (game, blackPlayer) = klerk.read(Ctx.system()) {
-                val gameId = ModelID<Game>(metadata.parameters.toInt())
-                val game = get(gameId)
-                val blackPlayer = get(game.props.blackPlayer)
-                Pair(game, blackPlayer)
+    private val log = KotlinLogging.logger {}
+    private val random = Random(seed = 1)
+
+    override val name = JobName("calculate-ai-action")
+    // The commands are validated with e.g. onlyByBlackPlayer, so they must be applied as the user that scheduled
+    // the job (Mr. Robot), not as the system.
+    override val agent = JobAgent.Scheduler
+    override val maxRetries = 0
+
+    // Note: the thinking pause is the job's scheduleAt, not a delay() inside the step. The context a step runs under
+    // (and thus the time the emitted command is applied at) is built before the step starts, so sleeping here would
+    // hide the AI's thinking time from the players' clocks.
+    override suspend fun step(args: JobStepArgs.Local<AiCursor, Ctx, Collections>): JobResult<AiCursor> {
+        val game = with(args.reader) { get(args.cursor.gameId) }
+
+        val command = when (game.state) {
+            GameState.WaitingForInvitedPlayer.name -> Command(AcceptInvite, game.id, null)
+
+            GameState.BlackTurn.name -> {
+                val move = calculateAllValidMoves(
+                    Board.fromMoves(game.props.moves),
+                    GameState.valueOf(game.state)
+                ).random()
+                Command(MakeMove, game.id, MakeMoveParams(move.from, move.to))
             }
 
-            val command = when (game.state) {
-                GameState.WaitingForInvitedPlayer.name -> Command(AcceptInvite, game.id, null)
-
-                GameState.BlackTurn.name -> {
-                    val move =
-                        calculateAllValidMoves(
-                            Board.fromMoves(game.props.moves),
-                            GameState.valueOf(game.state)
-                        ).random()
-                    Command(MakeMove, game.id, MakeMoveParams(move.from, move.to))
-                }
-
-                GameState.WhiteHasProposedDraw.name -> {
-                    val event = if (random.nextBoolean()) AcceptDraw else DeclineDraw
-                    Command(event, game.id, null)
-                }
-
-                else -> {
-                    log.info("Cannot handle state ${game.state}")
-                    return JobResult.Fail()
-                }
+            GameState.WhiteHasProposedDraw.name -> {
+                val event = if (random.nextBoolean()) AcceptDraw else DeclineDraw
+                Command(event, game.id, null)
             }
 
-            val result = klerk.handle(
-                command,
-                Ctx.fromUser(blackPlayer),
-                ProcessingOptions(CommandToken.simple()),
-            )
-            log.info(result.toString())
-
-            return JobResult.Success()
+            else -> {
+                log.info("Cannot handle state ${game.state}")
+                return JobResult.Abort("Cannot handle state ${game.state}")
+            }
         }
+
+        return JobResult.Success(command = command)
     }
-
-    override fun getRunFunction() = CalculateAiAction::run
-
 }

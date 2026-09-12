@@ -324,23 +324,23 @@ fun updatePlayersRatings(args: ArgForInstanceNonEvent<Game, Ctx, Collections>): 
 }
 
 fun onlyByCurrentPlayer(args: ArgForInstanceEvent<Game, Nothing?, Ctx, Collections>): PropertyCollectionValidity {
-    val user = args.context.user ?: return Invalid("Must be logged in")
+    val userId = args.context.userId ?: return Invalid("Must be logged in")
     if (whitePlayerStates.contains(args.model.state)) {
-        return if (user.id == args.model.props.whitePlayer) Valid else Invalid("Wrong player")
+        return if (userId == args.model.props.whitePlayer) Valid else Invalid("Wrong player")
     }
     if (blackPlayerStates.contains(args.model.state)) {
-        return if (user.id == args.model.props.blackPlayer) Valid else Invalid("Wrong player")
+        return if (userId == args.model.props.blackPlayer) Valid else Invalid("Wrong player")
     }
     throw IllegalArgumentException()
 }
 
 fun onlyByNotCurrentPlayer(args: ArgForInstanceEvent<Game, Nothing?, Ctx, Collections>): PropertyCollectionValidity {
-    val user = args.context.user ?: return Invalid("Must be logged in")
+    val userId = args.context.userId ?: return Invalid("Must be logged in")
     if (blackPlayerStates.contains(args.model.state)) {
-        return if (user.id == args.model.props.whitePlayer) Valid else Invalid("Wrong player")
+        return if (userId == args.model.props.whitePlayer) Valid else Invalid("Wrong player")
     }
     if (whitePlayerStates.contains(args.model.state)) {
-        return if (user.id == args.model.props.blackPlayer) Valid else Invalid("Wrong player")
+        return if (userId == args.model.props.blackPlayer) Valid else Invalid("Wrong player")
     }
     throw IllegalArgumentException()
 }
@@ -350,8 +350,8 @@ fun cannotPlayAgainstSelf(args: ArgForVoidEvent<Game, CreateGameParams, Ctx, Col
 }
 
 fun onlyByBlackPlayer(args: ArgForInstanceEvent<Game, Nothing?, Ctx, Collections>): PropertyCollectionValidity {
-    val user = args.context.user ?: return Invalid("Must be logged in")
-    return if (args.model.props.blackPlayer == user.id) Valid else Invalid()
+    val userId = args.context.userId ?: return Invalid("Must be logged in")
+    return if (args.model.props.blackPlayer == userId) Valid else Invalid()
 }
 
 fun playerMustBeWhite(args: ArgForVoidEvent<Game, CreateGameParams, Ctx, Collections>): PropertyCollectionValidity {
