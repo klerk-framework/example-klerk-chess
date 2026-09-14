@@ -4,7 +4,7 @@ import dev.klerkframework.klerk.Translation
 import dev.klerkframework.klerk.datatypes.DurationContainer
 import dev.klerkframework.klerk.datatypes.IntContainer
 import dev.klerkframework.klerk.datatypes.StringContainer
-import dev.klerkframework.klerk.validation.PropertyValidation
+import dev.klerkframework.klerk.validation.PropertyValidity
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
@@ -67,13 +67,13 @@ class Position(value: String) : StringContainer(value) {
         return "$column$row"
     }
 
-    override val validators: Set<(String, Translation) -> PropertyValidation> = setOf(::isSquareOnBoard)
+    override val validators: Set<(String, Translation) -> PropertyValidity> = setOf(::isSquareOnBoard)
 
-    private fun isSquareOnBoard(square: String, translation: Translation): PropertyValidation {
+    private fun isSquareOnBoard(square: String, translation: Translation): PropertyValidity {
         if (columns.contains(square[0]) && square[1].digitToIntOrNull() in 1..8) {
-            return PropertyValidation.Valid
+            return PropertyValidity.Valid
         }
-        return PropertyValidation.Invalid("Illegal position")
+        return PropertyValidity.Invalid("Illegal position")
     }
 
     companion object {

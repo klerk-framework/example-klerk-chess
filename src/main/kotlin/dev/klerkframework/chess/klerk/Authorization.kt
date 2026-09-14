@@ -11,35 +11,18 @@ import dev.klerkframework.klerk.PositiveAuthorization.NoOpinion
 fun createAuthorizationRules(): SpecificationBuilder<Ctx, Views>.() -> Unit = {
     authorization {
         commands {
-            positive {
-                rule(::authenticatedCanDoEverything)
-            }
-            negative {
-            }
+            positive(::authenticatedCanDoEverything)
         }
         readModels {
-            positive {
-                rule(::everybodyCanReadGames)
-                rule(::canReadTheirOwnUserAndMrRobot)
-            }
-            negative {
-            }
+            positive(::everybodyCanReadGames, ::canReadTheirOwnUserAndMrRobot)
         }
         readProperties {
-            positive {
-                rule(::everybodyCanReadAnyProperty)
-            }
-            negative {
-                rule(::canOnlySeeMovesInGamesWhichYouAreInvolvedIn)
-            }
+            positive(::everybodyCanReadAnyProperty)
+            negative(::canOnlySeeMovesInGamesWhichYouAreInvolvedIn)
         }
         eventLog {
-            positive {
-                rule(::aliceCanReadTheEventLog)
-            }
-            negative {
-                rule(::mustBeAuthenticatedToReadTheEventLog)
-            }
+            positive(::aliceCanReadTheEventLog)
+            negative(::mustBeAuthenticatedToReadTheEventLog)
         }
     }
 }
