@@ -90,7 +90,7 @@ suspend fun initAI(klerk: Klerk<Ctx, Views>) {
 
     // make AI react to events
     GlobalScope.launch {
-        klerk.models.subscribe(context, null).collect {
+        klerk.modelChanges.subscribe(null, context).collect {
             if (it is ModelModification.Created || it is ModelModification.Transitioned) {
                 val model = klerk.read(context) { get(it.id) }
                 if (model.props !is Game) {

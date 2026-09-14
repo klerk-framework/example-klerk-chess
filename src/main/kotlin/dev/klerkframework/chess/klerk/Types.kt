@@ -67,10 +67,10 @@ class Position(value: String) : StringContainer(value) {
         return "$column$row"
     }
 
-    override val validators: Set<(Translation) -> PropertyValidation> = setOf(::isSquareOnBoard)
+    override val validators: Set<(String, Translation) -> PropertyValidation> = setOf(::isSquareOnBoard)
 
-    private fun isSquareOnBoard(translation: Translation): PropertyValidation {
-        if (columns.contains(column) && row in 1..8) {
+    private fun isSquareOnBoard(square: String, translation: Translation): PropertyValidation {
+        if (columns.contains(square[0]) && square[1].digitToIntOrNull() in 1..8) {
             return PropertyValidation.Valid
         }
         return PropertyValidation.Invalid("Illegal position")

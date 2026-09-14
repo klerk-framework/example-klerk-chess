@@ -330,7 +330,7 @@ suspend fun confirmMove(call: ApplicationCall, klerk: Klerk<Ctx, Views>) {
 suspend fun handleSse(call: ApplicationCall, klerk: Klerk<Ctx, Views>) {
     //There is better support for SSE in ktor 3
     val id = ModelID<Any>(requireNotNull(call.parameters["id"]).toInt())
-    val events = klerk.models.subscribe(call.ctx(klerk), id)
+    val events = klerk.modelChanges.subscribe(id, call.ctx(klerk))
     call.response.cacheControl(CacheControl.NoCache(null))
     call.respondTextWriter(contentType = ContentType.Text.EventStream) {
         events.collect {
