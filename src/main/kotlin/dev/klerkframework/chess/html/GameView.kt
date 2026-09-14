@@ -117,13 +117,13 @@ suspend fun renderGame(call: ApplicationCall, klerk: Klerk<Ctx, Collections>, kl
                         form(action = "/game/${gameId}", method = FormMethod.post) {
                             hiddenInput {
                                 name = "move"
-                                value = dryRunMove.string
+                                value = dryRunMove.value
                             }
-                            submitInput { value = "Make move ${dryRunMove.string}" }
+                            submitInput { value = "Make move $dryRunMove" }
                         }
 
                         form(action = "/game/${gameId}", method = FormMethod.get) {
-                            submitInput { value = "Cancel move ${dryRunMove.string}" }
+                            submitInput { value = "Cancel move $dryRunMove" }
                         }
                     }
                 }
@@ -321,7 +321,6 @@ suspend fun confirmMove(call: ApplicationCall, klerk: Klerk<Ctx, Collections>) {
         klerk.handle(
             Command(MakeMove, gameId, MakeMoveParams(move.from, move.to)),
             call.ctx(klerk),
-            ProcessingOptions(CommandToken.simple())
         )
 
     }

@@ -59,14 +59,15 @@ fun main() {
 
     val mcpServer = createMcpServer(klerk, {
         val user = klerk.read(Ctx.system()) {
-            views.users.all.asSequence().first { it.props.name.valueWithoutAuthorization == "Alice" }
+            views.users.all.asSequence().first { it.props.name.value == "Alice" }
         }
         Ctx.fromUser(user)
     }, "Chess application", "1.0.0")
 
     suspend fun graphQlContextProvider(graphQlContext: GraphQLContext) = graphQlContext.ctx(klerk)
 
-    embeddedServer(Netty, port = 8080, host = "0.0.0.0", module = {
+    val port = System.getenv("CHESS_PORT")?.toInt() ?: 8080
+    embeddedServer(Netty, port, host = "0.0.0.0", module = {
         installKlerkGraphQL(klerk, ::graphQlContextProvider)
         configureRouting(klerk)
         mcpStatelessStreamableHttp {
@@ -77,18 +78,16 @@ fun main() {
 
 suspend fun createPlayers(klerk: Klerk<Ctx, Collections>) {
     val commandCreateAlice = Command(
-        event = CreateUser,
-        model = null,
-        params = CreateUserParams(UserName("Alice")),
+        CreateUser,
+        CreateUserParams(UserName("Alice"))
     )
-    klerk.handle(commandCreateAlice, Ctx.system(), ProcessingOptions(CommandToken.simple()))
+    klerk.handle(commandCreateAlice, Ctx.system())
 
     val commandCreateRobot = Command(
-        event = CreateUser,
-        model = null,
-        params = CreateUserParams(UserName("Mr. Robot")),
+        CreateUser,
+        CreateUserParams(UserName("Mr. Robot"))
     )
-    klerk.handle(commandCreateRobot, Ctx.system(), ProcessingOptions(CommandToken.simple()))
+    klerk.handle(commandCreateRobot, Ctx.system())
 }
 
 
@@ -99,7 +98,7 @@ suspend fun createPlayers(klerk: Klerk<Ctx, Collections>) {
 suspend fun initAI(klerk: Klerk<Ctx, Collections>) {
     log.info { "Initiating AI" }
     val robot = klerk.read(Ctx.system()) {
-        views.users.all.asSequence().first { it.props.name.string == "Mr. Robot" }
+        views.users.all.asSequence().first { it.props.name.value == "Mr. Robot" }
     }
     val context = Ctx.fromUser(robot)
 
@@ -111,16 +110,13 @@ suspend fun initAI(klerk: Klerk<Ctx, Collections>) {
                 if (model.props !is Game) {
                     return@collect
                 }
-                val game = (model.props as Game)
+                val game = model.props as Game
                 if (aiShouldAct(game, model.state, robot)) {
                     // A fresh context, since Ctx.time is stamped when the context is created.
                     val aiContext = Ctx.fromUser(robot)
                     @Suppress("UNCHECKED_CAST")
                     klerk.jobs.schedule(
-                        CalculateAiAction.declare(
-                            AiCursor(model.id as ModelID<Game>),
-                            scheduleAt = aiContext.time + AI_THINKING_TIME,
-                        ), aiContext
+                        CalculateAiAction.declare(AiCursor(model.id as ModelID<Game>)), aiContext
                     )
                 }
             }

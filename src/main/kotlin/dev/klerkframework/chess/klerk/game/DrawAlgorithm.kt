@@ -4,10 +4,12 @@ import dev.klerkframework.chess.klerk.Collections
 import dev.klerkframework.chess.klerk.Ctx
 import dev.klerkframework.chess.klerk.game.ShowNotificationDecisions.*
 import dev.klerkframework.klerk.ArgForInstanceNonEvent
+import dev.klerkframework.klerk.ExperimentalKlerkApi
 import dev.klerkframework.klerk.misc.AlgorithmBuilder
 import dev.klerkframework.klerk.misc.Decision
 import dev.klerkframework.klerk.misc.FlowChartAlgorithm
 
+@OptIn(ExperimentalKlerkApi::class)
 object IsAutomaticDraw : FlowChartAlgorithm<ArgForInstanceNonEvent<Game, Ctx, Collections>, Boolean>("Is it a draw?") {
 
     override fun configure(): AlgorithmBuilder<ArgForInstanceNonEvent<Game, Ctx, Collections>, Boolean>.() -> Unit = {
@@ -33,6 +35,7 @@ object IsAutomaticDraw : FlowChartAlgorithm<ArgForInstanceNonEvent<Game, Ctx, Co
 
 }
 
+@OptIn(ExperimentalKlerkApi::class)
 sealed class ShowNotificationDecisions<T>(
     override val name: String,
     override val function: (ArgForInstanceNonEvent<Game, Ctx, Collections>) -> T

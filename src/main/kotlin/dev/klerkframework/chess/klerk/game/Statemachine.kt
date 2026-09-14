@@ -6,7 +6,7 @@ import dev.klerkframework.chess.klerk.game.GameState.*
 import dev.klerkframework.chess.klerk.user.UpdateScore
 import dev.klerkframework.chess.klerk.user.UpdateScoreParams
 import dev.klerkframework.klerk.*
-import dev.klerkframework.klerk.EventVisibility.EXTERNAL
+import dev.klerkframework.klerk.EventVisibility.External
 import dev.klerkframework.klerk.PropertyCollectionValidity.*
 import dev.klerkframework.klerk.command.Command
 import dev.klerkframework.klerk.statemachine.StateMachine
@@ -183,19 +183,19 @@ fun createGameStateMachine(collections: Collections): StateMachine<Game, Enum<*>
 
         state(WhiteVictory) {
             onEnter {
-                createCommands(::updatePlayersRatings)
+                commands(::updatePlayersRatings)
             }
         }
 
         state(BlackVictory) {
             onEnter {
-                createCommands(::updatePlayersRatings)
+                commands(::updatePlayersRatings)
             }
         }
 
         state(Draw) {
             onEnter {
-                createCommands(::updatePlayersRatings)
+                commands(::updatePlayersRatings)
             }
         }
 
@@ -221,23 +221,23 @@ fun createGameStateMachine(collections: Collections): StateMachine<Game, Enum<*>
 
     }
 
-object CreateGame : VoidEventWithParameters<Game, CreateGameParams>(Game::class, EXTERNAL, CreateGameParams::class)
+object CreateGame : VoidEventWithParameters<Game, CreateGameParams>(Game::class, External, CreateGameParams::class)
 
-object AcceptInvite : InstanceEventNoParameters<Game>(Game::class, EXTERNAL)
+object AcceptInvite : InstanceEventNoParameters<Game>(Game::class, External)
 
-object DeclineInvite : InstanceEventNoParameters<Game>(Game::class, EXTERNAL)
+object DeclineInvite : InstanceEventNoParameters<Game>(Game::class, External)
 
-object MakeMove : InstanceEventWithParameters<Game, MakeMoveParams>(Game::class, EXTERNAL, MakeMoveParams::class)
+object MakeMove : InstanceEventWithParameters<Game, MakeMoveParams>(Game::class, External, MakeMoveParams::class)
 
-object ProposeDraw : InstanceEventNoParameters<Game>(Game::class, EXTERNAL)
+object ProposeDraw : InstanceEventNoParameters<Game>(Game::class, External)
 
-object Resign : InstanceEventNoParameters<Game>(Game::class, EXTERNAL)
+object Resign : InstanceEventNoParameters<Game>(Game::class, External)
 
-object AcceptDraw : InstanceEventNoParameters<Game>(Game::class, EXTERNAL)
+object AcceptDraw : InstanceEventNoParameters<Game>(Game::class, External)
 
-object DeclineDraw : InstanceEventNoParameters<Game>(Game::class, EXTERNAL)
+object DeclineDraw : InstanceEventNoParameters<Game>(Game::class, External)
 
-object PromotePawn : InstanceEventWithParameters<Game, PromotePawnParams>(Game::class, EXTERNAL, PromotePawnParams::class)
+object PromotePawn : InstanceEventWithParameters<Game, PromotePawnParams>(Game::class, External, PromotePawnParams::class)
 
 private val whitePlayerStates = setOf(WhiteTurn.name, WhiteHasProposedDraw.name, WhitePromotePawn.name)
 private val blackPlayerStates = setOf(BlackTurn.name, BlackHasProposedDraw.name, BlackPromotePawn.name)
@@ -250,8 +250,8 @@ fun isValidMove(args: ArgForInstanceEvent<Game, MakeMoveParams, Ctx, Collections
 
 fun makeMove(args: ArgForInstanceEvent<Game, MakeMoveParams, Ctx, Collections>): Game {
     val moveInCoordinateNotation = CoordinateNotationMove.move(
-        from = Position.fromString(args.command.params.from.string),
-        to = Position.fromString(args.command.params.to.string)
+        from = Position.fromString(args.command.params.from.value),
+        to = Position.fromString(args.command.params.to.value)
     )
     return args.model.props.copy(moves = args.model.props.moves.plus(moveInCoordinateNotation))
 }
@@ -290,7 +290,7 @@ fun whiteCanPromotePawn(args: ArgForInstanceNonEvent<Game, Ctx, Collections>): B
     fromMoves(args.model.props.moves).canPromotePawn(Color.White)
 
 fun isPromotablePiece(args: ArgForInstanceEvent<Game, PromotePawnParams, Ctx, Collections>): PropertyCollectionValidity {
-    val piece = args.command.params.piece.string
+    val piece = args.command.params.piece.value
     if (piece.length != 1) {
         return Invalid("Illegal piece")
     }
@@ -362,14 +362,14 @@ fun playerMustBeWhite(args: ArgForVoidEvent<Game, CreateGameParams, Ctx, Collect
 fun updatePlayerTime(args: ArgForInstanceNonEvent<Game, Ctx, Collections>): Game {
     val delta = args.time.minus(args.model.lastStateTransitionAt)
     return if (whitePlayerStates.contains(args.model.state)) {
-        args.model.props.copy(whitePlayerTime = PlayTime(args.model.props.whitePlayerTime.duration + delta))
+        args.model.props.copy(whitePlayerTime = PlayTime(args.model.props.whitePlayerTime.value + delta))
     } else {
-        args.model.props.copy(blackPlayerTime = PlayTime(args.model.props.blackPlayerTime.duration + delta))
+        args.model.props.copy(blackPlayerTime = PlayTime(args.model.props.blackPlayerTime.value + delta))
     }
 }
 
 fun remainingPlayTime(args: ArgForInstanceNonEvent<Game, Ctx, Collections>): Instant {
     val playTime = if (whitePlayerStates.contains(args.model.state)) args.model.props.whitePlayerTime else args.model.props.blackPlayerTime
-    val remainingTime = 5.minutes.minus(playTime.duration)
+    val remainingTime = 5.minutes.minus(playTime.value)
     return args.time.plus(remainingTime)
 }

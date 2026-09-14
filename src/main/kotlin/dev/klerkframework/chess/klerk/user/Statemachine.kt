@@ -12,7 +12,7 @@ import dev.klerkframework.chess.klerk.user.UserStates.*
 import dev.klerkframework.klerk.ArgForInstanceEvent
 import dev.klerkframework.klerk.ArgForVoidEvent
 import dev.klerkframework.klerk.EventVisibility
-import dev.klerkframework.klerk.EventVisibility.EXTERNAL
+import dev.klerkframework.klerk.EventVisibility.External
 
 enum class UserStates {
     Created
@@ -43,14 +43,14 @@ fun createUserStateMachine(): StateMachine<User, Enum<*>, Ctx, Collections> =
 
     }
 
-object CreateUser : VoidEventWithParameters<User, CreateUserParams>(User::class, EXTERNAL, CreateUserParams::class)
-object DeleteUser : InstanceEventNoParameters<User>(User::class, EXTERNAL)
-object UpdateScore : InstanceEventWithParameters<User, UpdateScoreParams>(User::class, EXTERNAL, UpdateScoreParams::class)
+object CreateUser : VoidEventWithParameters<User, CreateUserParams>(User::class, External, CreateUserParams::class)
+object DeleteUser : InstanceEventNoParameters<User>(User::class, External)
+object UpdateScore : InstanceEventWithParameters<User, UpdateScoreParams>(User::class, External, UpdateScoreParams::class)
 
 fun createUser(args: ArgForVoidEvent<User, CreateUserParams, Ctx, Collections>): User {
     return User(name = args.command.params.name, score = Score(0))
 }
 
 fun updateScore(args: ArgForInstanceEvent<User, UpdateScoreParams, Ctx, Collections>): User {
-    return args.model.props.copy(score = Score(args.model.props.score.int + args.command.params.delta.int))
+    return args.model.props.copy(score = Score(args.model.props.score.value + args.command.params.delta.value))
 }

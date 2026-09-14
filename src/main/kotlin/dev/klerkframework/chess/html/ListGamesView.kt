@@ -14,7 +14,7 @@ import kotlinx.html.*
 
 suspend fun listGames(call: ApplicationCall, klerk: Klerk<Ctx, Collections>, klerkWeb: KlerkWeb<Ctx, Collections>) {
     val context = call.ctx(klerk)
-    klerk.readSuspend(call::ctx) {
+    klerk.readSuspend(context) {
         call.respondHtml {
             head {
                 title = "Chess"
@@ -33,7 +33,7 @@ suspend fun listGames(call: ApplicationCall, klerk: Klerk<Ctx, Collections>, kle
 
                 h2 { +"Top scores" }
                 table {
-                    views.users.all.asSequence().sortedByDescending { it.props.score.int }.forEach { user ->
+                    views.users.all.asSequence().sortedByDescending { it.props.score.value }.forEach { user ->
                         tr {
                             td { +"${user.props.name}" }
                             td { +"${user.props.score}" }

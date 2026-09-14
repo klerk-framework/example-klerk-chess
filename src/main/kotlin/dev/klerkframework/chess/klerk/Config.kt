@@ -52,6 +52,7 @@ data class Collections(
 fun createConfig(): Specification<Ctx, Collections> {
     val collections = Collections(ModelViews(), ModelViews())
     return SpecificationBuilder<Ctx, Collections>(collections).build {
+        plugins(AssetsPlugin(emptySet()))
         managedModels {
             model(User::class, createUserStateMachine(), collections.users)
             model(Game::class, createGameStateMachine(collections), collections.games)
@@ -61,11 +62,11 @@ fun createConfig(): Specification<Ctx, Collections> {
         }
         //apply(createAuthorizationRules())
         authorization {
-            apply(insecureAllowEverything())   // TODO
+            allowEverythingInsecurely()   // TODO
         }
-        systemContextProvider { systemIdentity -> Ctx(systemIdentity) }
+        systemContextProvider { Ctx(SystemIdentity) }
         jobContextProvider(::jobContext)
-    }.withPlugin(AssetsPlugin(emptySet()))
+    }
 }
 
 /** A job step runs as the actor that scheduled it, which arrives as a plain id — see [Ctx.userId]. */

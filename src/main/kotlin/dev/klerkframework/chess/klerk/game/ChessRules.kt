@@ -46,7 +46,7 @@ class Board(val pieces: List<String>) {
         }
         move.promotedTo()?.let {
             val colorLetter = piecesAfter[squareToIndex(move.to)].first()
-            piecesAfter[squareToIndex(move.to)] = "${colorLetter}${it.string}"
+            piecesAfter[squareToIndex(move.to)] = "${colorLetter}${it.value}"
         }
         return Board(piecesAfter)
     }

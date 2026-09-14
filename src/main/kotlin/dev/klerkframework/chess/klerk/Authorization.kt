@@ -46,10 +46,10 @@ fun createAuthorizationRules(): SpecificationBuilder<Ctx, Collections>.() -> Uni
 
 fun canReadTheirOwnUserAndMrRobot(args: ArgModelContextReader<Ctx, Collections>): PositiveAuthorization {
     val p = (args.model.props as? User) ?: return NoOpinion
-    if (p.name.string == "Mr. Robot") {
+    if (p.name.value == "Mr. Robot") {
         return Allow
     }
-    return if (p.name.string == args.context.user?.props?.name?.string) Allow else NoOpinion
+    return if (p.name.value == args.context.user?.props?.name?.value) Allow else NoOpinion
 }
 
 fun everybodyCanReadGames(args: ArgModelContextReader<Ctx, Collections>): PositiveAuthorization {
@@ -65,7 +65,7 @@ fun everybodyCanReadAnyProperty(args: ArgsForPropertyAuth<Ctx, Collections>): Po
 }
 
 fun aliceCanReadTheEventLog(args: ArgContextReader<Ctx, Collections>): PositiveAuthorization {
-    return if (args.context.user?.props?.name?.string == "Alice") Allow else NoOpinion
+    return if (args.context.user?.props?.name?.value == "Alice") Allow else NoOpinion
 }
 
 fun mustBeAuthenticatedToReadTheEventLog(args: ArgContextReader<Ctx, Collections>): NegativeAuthorization {

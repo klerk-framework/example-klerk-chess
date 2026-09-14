@@ -16,7 +16,7 @@ class UserName(value: String) : StringContainer(value) {
 }
 
 class PlayTime(value: Duration) : DurationContainer(value) {
-    override fun toString() = duration.toString()
+    override fun toString() = value.toString()
 }
 
 class PieceString(value: String): StringContainer(value) {
@@ -31,18 +31,18 @@ class CoordinateNotationMove(value: String) : StringContainer(value) {
     override val maxLines = 1
 
     val from: Position
-        get() = Position.from(string[0], string[1].toString().toInt())
+        get() = Position.from(value[0], value[1].toString().toInt())
 
     val to: Position
-        get() = Position.from(string[3], string[4].toString().toInt())
+        get() = Position.from(value[3], value[4].toString().toInt())
 
     fun withPromotedPawn(piece: PieceString): CoordinateNotationMove {
-        return CoordinateNotationMove(string.plus("(${piece.string})"))
+        return CoordinateNotationMove(value.plus("(${piece.value})"))
     }
 
     fun promotedTo(): PieceString? {
-        if (string.endsWith(")")) {
-            return PieceString(string[string.length -2].toString())
+        if (value.endsWith(")")) {
+            return PieceString(value[value.length -2].toString())
         }
         return null
     }
@@ -58,10 +58,10 @@ class Position(value: String) : StringContainer(value) {
     override val maxLines = 1
 
     val column: Char
-        get() = string.first()
+        get() = value.first()
 
     val row: Int
-        get() = string[1].toString().toInt()
+        get() = value[1].toString().toInt()
 
     override fun toString(): String {
         return "$column$row"
