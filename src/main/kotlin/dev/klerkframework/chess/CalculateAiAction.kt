@@ -37,18 +37,18 @@ object CalculateAiAction : JobType.Local<AiCursor, Ctx, Views>() {
         delay(AI_THINKING_TIME)     // simulate thinking
         val game = with(args.reader) { get(args.cursor.gameId) }
 
-        val command = when (game.state) {
-            GameState.WaitingForInvitedPlayer.name -> Command(AcceptInvite, game.id)
+        val command = when (game.stateAs<GameState>()) {
+            GameState.WaitingForInvitedPlayer -> Command(AcceptInvite, game.id)
 
-            GameState.BlackTurn.name -> {
+            GameState.BlackTurn -> {
                 val move = calculateAllValidMoves(
                     Board.fromMoves(game.props.moves),
-                    GameState.valueOf(game.state)
+                    game.stateAs<GameState>()
                 ).random()
                 Command(MakeMove, game.id, MakeMoveParams(move.from, move.to))
             }
 
-            GameState.WhiteHasProposedDraw.name -> {
+            GameState.WhiteHasProposedDraw -> {
                 val event = if (random.nextBoolean()) AcceptDraw else DeclineDraw
                 Command(event, game.id)
             }

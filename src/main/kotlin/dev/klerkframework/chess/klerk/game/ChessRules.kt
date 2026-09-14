@@ -230,7 +230,7 @@ fun canClaimDraw(model: Model<Game>): Boolean = isThreefoldRepetition() || isFif
 
 fun isStalemate(args: LifecycleArgs<Game, Ctx, Views>): Boolean {
     val board = Board.fromMoves(args.model.props.moves)
-    return when (GameState.valueOf(args.model.state)) {
+    return when (args.model.stateAs<GameState>()) {
         GameState.WhiteTurn -> !isWhiteCheck(board) && calculateAllValidMoves(board, GameState.WhiteTurn,  true).isEmpty()
         GameState.BlackTurn -> !isBlackCheck(board) && calculateAllValidMoves(board, GameState.BlackTurn,  true).isEmpty()
         else -> throw Exception()

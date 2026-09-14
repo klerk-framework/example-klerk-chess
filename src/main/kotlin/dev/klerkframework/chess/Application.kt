@@ -96,8 +96,7 @@ suspend fun initAI(klerk: Klerk<Ctx, Views>) {
                 if (model.props !is Game) {
                     return@collect
                 }
-                val game = model.props as Game
-                if (aiShouldAct(game, model.state, robot)) {
+                if (aiShouldAct(model, robot)) {
                     // A fresh context, since Ctx.time is stamped when the context is created.
                     val aiContext = Ctx.fromUser(robot)
                     @Suppress("UNCHECKED_CAST")
@@ -111,7 +110,7 @@ suspend fun initAI(klerk: Klerk<Ctx, Views>) {
 
     // make AI aware of ongoing games
     klerk.read(context) {
-        views.games.all.asSequence().filter { aiShouldAct(it.props, it.state, robot) }.toList()
+        views.games.all.asSequence().filter { aiShouldAct(it, robot) }.toList()
     }.forEach {
         val aiContext = Ctx.fromUser(robot)
         klerk.jobs.schedule(
@@ -122,8 +121,10 @@ suspend fun initAI(klerk: Klerk<Ctx, Views>) {
 
 }
 
-fun aiShouldAct(game: Game, state: String, robot: Model<User>): Boolean {
-    val statesWhereAiShouldAct =
-        setOf(BlackTurn.name, BlackPromotePawn.name, WhiteHasProposedDraw.name, WaitingForInvitedPlayer.name)
-    return game.blackPlayer == robot.id && statesWhereAiShouldAct.contains(state)
+private val statesWhereAiShouldAct =
+    setOf(BlackTurn, BlackPromotePawn, WhiteHasProposedDraw, WaitingForInvitedPlayer)
+
+fun aiShouldAct(game: Model<out Any>, robot: Model<User>): Boolean {
+    val props = game.props
+    return props is Game && props.blackPlayer == robot.id && game.isIn(statesWhereAiShouldAct)
 }

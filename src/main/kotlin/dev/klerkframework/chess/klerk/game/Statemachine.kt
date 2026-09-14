@@ -234,12 +234,12 @@ object DeclineDraw : InstanceEventNoParameters<Game>(External)
 
 object PromotePawn : InstanceEventWithParameters<Game, PromotePawnParams>(External)
 
-private val whitePlayerStates = setOf(WhiteTurn.name, WhiteHasProposedDraw.name, WhitePromotePawn.name)
-private val blackPlayerStates = setOf(BlackTurn.name, BlackHasProposedDraw.name, BlackPromotePawn.name)
+private val whitePlayerStates = setOf(WhiteTurn, WhiteHasProposedDraw, WhitePromotePawn)
+private val blackPlayerStates = setOf(BlackTurn, BlackHasProposedDraw, BlackPromotePawn)
 
 fun isValidMove(args: InstanceEventArgs<Game, MakeMoveParams, Ctx, Views>): PropertyCollectionValidity {
     val move = CoordinateNotationMove.move(args.command.params.from, args.command.params.to)
-    val validMoves = calculateAllValidMoves(fromMoves(args.model.props.moves), valueOf(args.model.state))
+    val validMoves = calculateAllValidMoves(fromMoves(args.model.props.moves), args.model.stateAs<GameState>())
     return if (validMoves.contains(move)) Valid else Invalid("Illegal move")
 }
 
@@ -267,11 +267,11 @@ fun tellUserAboutDecline(args: InstanceEventArgs<Game, Nothing?, Ctx, Views>) {
 
 fun currentPlayerIsCheckmate(args: LifecycleArgs<Game, Ctx, Views>): Boolean {
     val board = fromMoves(args.model.props.moves)
-    if (args.model.state == WhiteTurn.name) {
+    if (args.model.isIn(WhiteTurn)) {
         return isWhiteCheck(board) &&
                 calculateAllValidMoves(board, WhiteTurn, true).isEmpty()
     }
-    if (args.model.state == BlackTurn.name) {
+    if (args.model.isIn(BlackTurn)) {
         return isBlackCheck(board) &&
                 calculateAllValidMoves(board, BlackTurn, true).isEmpty()
     }
@@ -302,14 +302,14 @@ fun automaticDraw(args: LifecycleArgs<Game, Ctx, Views>): Boolean =
     isStalemate(args) || isDeadPosition(args) || isFivefoldRepetition()
 
 fun updatePlayersRatings(args: LifecycleArgs<Game, Ctx, Views>): List<Command<out Any, out Any>> {
-    val whitePoints = when (args.model.state) {
-        WhiteVictory.name -> 2
-        Draw.name -> 1
+    val whitePoints = when (args.model.stateAs<GameState>()) {
+        WhiteVictory -> 2
+        Draw -> 1
         else -> 0
     }
-    val blackPoints = when (args.model.state) {
-        BlackVictory.name -> 2
-        Draw.name -> 1
+    val blackPoints = when (args.model.stateAs<GameState>()) {
+        BlackVictory -> 2
+        Draw -> 1
         else -> 0
     }
     return listOf(
@@ -320,10 +320,10 @@ fun updatePlayersRatings(args: LifecycleArgs<Game, Ctx, Views>): List<Command<ou
 
 fun onlyByCurrentPlayer(args: InstanceEventArgs<Game, Nothing?, Ctx, Views>): PropertyCollectionValidity {
     val userId = args.context.userId ?: return Invalid("Must be logged in")
-    if (whitePlayerStates.contains(args.model.state)) {
+    if (args.model.isIn(whitePlayerStates)) {
         return if (userId == args.model.props.whitePlayer) Valid else Invalid("Wrong player")
     }
-    if (blackPlayerStates.contains(args.model.state)) {
+    if (args.model.isIn(blackPlayerStates)) {
         return if (userId == args.model.props.blackPlayer) Valid else Invalid("Wrong player")
     }
     throw IllegalArgumentException()
@@ -331,10 +331,10 @@ fun onlyByCurrentPlayer(args: InstanceEventArgs<Game, Nothing?, Ctx, Views>): Pr
 
 fun onlyByNotCurrentPlayer(args: InstanceEventArgs<Game, Nothing?, Ctx, Views>): PropertyCollectionValidity {
     val userId = args.context.userId ?: return Invalid("Must be logged in")
-    if (blackPlayerStates.contains(args.model.state)) {
+    if (args.model.isIn(blackPlayerStates)) {
         return if (userId == args.model.props.whitePlayer) Valid else Invalid("Wrong player")
     }
-    if (whitePlayerStates.contains(args.model.state)) {
+    if (args.model.isIn(whitePlayerStates)) {
         return if (userId == args.model.props.blackPlayer) Valid else Invalid("Wrong player")
     }
     throw IllegalArgumentException()
@@ -356,7 +356,7 @@ fun playerMustBeWhite(args: VoidEventArgs<Game, CreateGameParams, Ctx, Views>): 
 
 fun updatePlayerTime(args: LifecycleArgs<Game, Ctx, Views>): Game {
     val delta = args.time.minus(args.model.lastStateTransitionAt)
-    return if (whitePlayerStates.contains(args.model.state)) {
+    return if (args.model.isIn(whitePlayerStates)) {
         args.model.props.copy(whitePlayerTime = PlayTime(args.model.props.whitePlayerTime.value + delta))
     } else {
         args.model.props.copy(blackPlayerTime = PlayTime(args.model.props.blackPlayerTime.value + delta))
@@ -364,7 +364,7 @@ fun updatePlayerTime(args: LifecycleArgs<Game, Ctx, Views>): Game {
 }
 
 fun remainingPlayTime(args: LifecycleArgs<Game, Ctx, Views>): Instant {
-    val playTime = if (whitePlayerStates.contains(args.model.state)) args.model.props.whitePlayerTime else args.model.props.blackPlayerTime
+    val playTime = if (args.model.isIn(whitePlayerStates)) args.model.props.whitePlayerTime else args.model.props.blackPlayerTime
     val remainingTime = 5.minutes.minus(playTime.value)
     return args.time.plus(remainingTime)
 }
