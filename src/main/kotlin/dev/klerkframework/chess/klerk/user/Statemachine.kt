@@ -43,9 +43,9 @@ fun createUserStateMachine(): StateMachine<User, Enum<*>, Ctx, Collections> =
 
     }
 
-object CreateUser : VoidEventWithParameters<User, CreateUserParams>(User::class, External, CreateUserParams::class)
-object DeleteUser : InstanceEventNoParameters<User>(User::class, External)
-object UpdateScore : InstanceEventWithParameters<User, UpdateScoreParams>(User::class, External, UpdateScoreParams::class)
+object CreateUser : VoidEventWithParameters<User, CreateUserParams>(External)
+object DeleteUser : InstanceEventNoParameters<User>(External)
+object UpdateScore : InstanceEventWithParameters<User, UpdateScoreParams>(External)
 
 fun createUser(args: ArgForVoidEvent<User, CreateUserParams, Ctx, Collections>): User {
     return User(name = args.command.params.name, score = Score(0))

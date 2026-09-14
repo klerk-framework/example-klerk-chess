@@ -4,7 +4,7 @@ import dev.klerkframework.chess.klerk.Collections
 import dev.klerkframework.chess.klerk.Ctx
 import dev.klerkframework.chess.klerk.game.Game
 import dev.klerkframework.chess.plugins.ctx
-import dev.klerkframework.klerk.collection.asSequence
+import dev.klerkframework.klerk.view.asSequence
 import dev.klerkframework.klerk.Klerk
 import dev.klerkframework.web.KlerkWeb
 import dev.klerkframework.web.eventButton

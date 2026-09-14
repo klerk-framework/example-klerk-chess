@@ -6,7 +6,7 @@ import dev.klerkframework.chess.klerk.game.createGameStateMachine
 import dev.klerkframework.chess.klerk.user.User
 import dev.klerkframework.chess.klerk.user.createUserStateMachine
 import dev.klerkframework.klerk.*
-import dev.klerkframework.klerk.collection.ModelViews
+import dev.klerkframework.klerk.view.ModelViews
 import dev.klerkframework.klerk.storage.AttachedBlobStore
 import dev.klerkframework.klerk.storage.Persistence
 import dev.klerkframework.klerk.storage.SqlPersistence

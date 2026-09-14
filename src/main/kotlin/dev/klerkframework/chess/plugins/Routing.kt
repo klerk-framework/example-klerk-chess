@@ -6,7 +6,7 @@ import dev.klerkframework.chess.klerk.Ctx
 import dev.klerkframework.chess.klerk.game.Game
 import dev.klerkframework.chess.klerk.user.User
 import dev.klerkframework.graphql.klerkGraphQLRoutes
-import dev.klerkframework.klerk.collection.asSequence
+import dev.klerkframework.klerk.view.asSequence
 import dev.klerkframework.klerk.EventReference
 import dev.klerkframework.klerk.Klerk
 import dev.klerkframework.web.KlerkWeb

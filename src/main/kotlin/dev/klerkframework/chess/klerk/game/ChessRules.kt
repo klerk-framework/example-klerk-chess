@@ -7,7 +7,7 @@ import dev.klerkframework.chess.klerk.Ctx
 import dev.klerkframework.chess.klerk.game.Color.Black
 import dev.klerkframework.chess.klerk.game.Color.White
 import dev.klerkframework.chess.klerk.game.Piece.*
-import dev.klerkframework.klerk.ArgForInstanceNonEvent
+import dev.klerkframework.klerk.LifecycleArgs
 import dev.klerkframework.klerk.Model
 
 class Board(val pieces: List<String>) {
@@ -228,7 +228,7 @@ fun isBlackCheck(board: Board): Boolean {
 
 fun canClaimDraw(model: Model<Game>): Boolean = isThreefoldRepetition() || isFiftyMoves()
 
-fun isStalemate(args: ArgForInstanceNonEvent<Game, Ctx, Collections>): Boolean {
+fun isStalemate(args: LifecycleArgs<Game, Ctx, Collections>): Boolean {
     val board = Board.fromMoves(args.model.props.moves)
     return when (GameState.valueOf(args.model.state)) {
         GameState.WhiteTurn -> !isWhiteCheck(board) && calculateAllValidMoves(board, GameState.WhiteTurn,  true).isEmpty()
@@ -237,7 +237,7 @@ fun isStalemate(args: ArgForInstanceNonEvent<Game, Ctx, Collections>): Boolean {
     }
 }
 
-fun isDeadPosition(args: ArgForInstanceNonEvent<Game, Ctx, Collections>): Boolean = isInsufficientMaterial(args.model)   // We are not trying to figure out other dead positions
+fun isDeadPosition(args: LifecycleArgs<Game, Ctx, Collections>): Boolean = isInsufficientMaterial(args.model)   // We are not trying to figure out other dead positions
 
 fun isFivefoldRepetition(): Boolean {
     return false // TODO

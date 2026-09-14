@@ -12,8 +12,8 @@ import dev.klerkframework.chess.klerk.user.CreateUserParams
 import dev.klerkframework.chess.klerk.user.User
 import dev.klerkframework.chess.plugins.configureRouting
 import dev.klerkframework.chess.plugins.ctx
-import dev.klerkframework.klerk.collection.asSequence
-import dev.klerkframework.klerk.collection.isEmpty
+import dev.klerkframework.klerk.view.asSequence
+import dev.klerkframework.klerk.view.isEmpty
 import dev.klerkframework.klerk.Klerk
 import dev.klerkframework.klerk.Model
 import dev.klerkframework.klerk.ModelID

@@ -95,13 +95,11 @@ fun createGameStateMachine(collections: Collections): StateMachine<Game, Enum<*>
 
         state(WhiteTurn) {
             onEnter {
-                transitionWhen(
-                    linkedMapOf(
-                        ::blackCanPromotePawn to BlackPromotePawn,
-                        ::currentPlayerIsCheckmate to BlackVictory,
-                        IsAutomaticDraw::execute to Draw
-                    )
-                )
+                transitionWhen {
+                    on(::blackCanPromotePawn, BlackPromotePawn)
+                    on(::currentPlayerIsCheckmate, BlackVictory)
+                    on(IsAutomaticDraw::execute, Draw)
+                }
             }
 
             onEvent(MakeMove) {
@@ -128,13 +126,11 @@ fun createGameStateMachine(collections: Collections): StateMachine<Game, Enum<*>
 
         state(BlackTurn) {
             onEnter {
-                transitionWhen(
-                    linkedMapOf(
-                        ::whiteCanPromotePawn to WhitePromotePawn,
-                        ::currentPlayerIsCheckmate to WhiteVictory,
-                        IsAutomaticDraw::execute to Draw
-                    )
-                )
+                transitionWhen {
+                    on(::whiteCanPromotePawn, WhitePromotePawn)
+                    on(::currentPlayerIsCheckmate, WhiteVictory)
+                    on(IsAutomaticDraw::execute, Draw)
+                }
             }
 
             onEvent(MakeMove) {
@@ -221,23 +217,23 @@ fun createGameStateMachine(collections: Collections): StateMachine<Game, Enum<*>
 
     }
 
-object CreateGame : VoidEventWithParameters<Game, CreateGameParams>(Game::class, External, CreateGameParams::class)
+object CreateGame : VoidEventWithParameters<Game, CreateGameParams>(External)
 
-object AcceptInvite : InstanceEventNoParameters<Game>(Game::class, External)
+object AcceptInvite : InstanceEventNoParameters<Game>(External)
 
-object DeclineInvite : InstanceEventNoParameters<Game>(Game::class, External)
+object DeclineInvite : InstanceEventNoParameters<Game>(External)
 
-object MakeMove : InstanceEventWithParameters<Game, MakeMoveParams>(Game::class, External, MakeMoveParams::class)
+object MakeMove : InstanceEventWithParameters<Game, MakeMoveParams>(External)
 
-object ProposeDraw : InstanceEventNoParameters<Game>(Game::class, External)
+object ProposeDraw : InstanceEventNoParameters<Game>(External)
 
-object Resign : InstanceEventNoParameters<Game>(Game::class, External)
+object Resign : InstanceEventNoParameters<Game>(External)
 
-object AcceptDraw : InstanceEventNoParameters<Game>(Game::class, External)
+object AcceptDraw : InstanceEventNoParameters<Game>(External)
 
-object DeclineDraw : InstanceEventNoParameters<Game>(Game::class, External)
+object DeclineDraw : InstanceEventNoParameters<Game>(External)
 
-object PromotePawn : InstanceEventWithParameters<Game, PromotePawnParams>(Game::class, External, PromotePawnParams::class)
+object PromotePawn : InstanceEventWithParameters<Game, PromotePawnParams>(External)
 
 private val whitePlayerStates = setOf(WhiteTurn.name, WhiteHasProposedDraw.name, WhitePromotePawn.name)
 private val blackPlayerStates = setOf(BlackTurn.name, BlackHasProposedDraw.name, BlackPromotePawn.name)
@@ -270,7 +266,7 @@ fun tellUserAboutDecline(args: ArgForInstanceEvent<Game, Nothing?, Ctx, Collecti
     println("Let's pretend we send an email")
 }
 
-fun currentPlayerIsCheckmate(args: ArgForInstanceNonEvent<Game, Ctx, Collections>): Boolean {
+fun currentPlayerIsCheckmate(args: LifecycleArgs<Game, Ctx, Collections>): Boolean {
     val board = fromMoves(args.model.props.moves)
     if (args.model.state == WhiteTurn.name) {
         return isWhiteCheck(board) &&
@@ -283,10 +279,10 @@ fun currentPlayerIsCheckmate(args: ArgForInstanceNonEvent<Game, Ctx, Collections
     throw IllegalArgumentException()
 }
 
-fun blackCanPromotePawn(args: ArgForInstanceNonEvent<Game, Ctx, Collections>): Boolean =
+fun blackCanPromotePawn(args: LifecycleArgs<Game, Ctx, Collections>): Boolean =
     fromMoves(args.model.props.moves).canPromotePawn(Color.Black)
 
-fun whiteCanPromotePawn(args: ArgForInstanceNonEvent<Game, Ctx, Collections>): Boolean =
+fun whiteCanPromotePawn(args: LifecycleArgs<Game, Ctx, Collections>): Boolean =
     fromMoves(args.model.props.moves).canPromotePawn(Color.White)
 
 fun isPromotablePiece(args: ArgForInstanceEvent<Game, PromotePawnParams, Ctx, Collections>): PropertyCollectionValidity {
@@ -303,10 +299,10 @@ fun promotePawn(args: ArgForInstanceEvent<Game, PromotePawnParams, Ctx, Collecti
     return args.model.props.copy(moves = updatedMoves)
 }
 
-fun automaticDraw(args: ArgForInstanceNonEvent<Game, Ctx, Collections>): Boolean =
+fun automaticDraw(args: LifecycleArgs<Game, Ctx, Collections>): Boolean =
     isStalemate(args) || isDeadPosition(args) || isFivefoldRepetition()
 
-fun updatePlayersRatings(args: ArgForInstanceNonEvent<Game, Ctx, Collections>): List<Command<out Any, out Any>> {
+fun updatePlayersRatings(args: LifecycleArgs<Game, Ctx, Collections>): List<Command<out Any, out Any>> {
     val whitePoints = when (args.model.state) {
         WhiteVictory.name -> 2
         Draw.name -> 1
@@ -359,7 +355,7 @@ fun playerMustBeWhite(args: ArgForVoidEvent<Game, CreateGameParams, Ctx, Collect
     return if (args.command.params.whitePlayer == user.id) Valid else Invalid("You must play white")
 }
 
-fun updatePlayerTime(args: ArgForInstanceNonEvent<Game, Ctx, Collections>): Game {
+fun updatePlayerTime(args: LifecycleArgs<Game, Ctx, Collections>): Game {
     val delta = args.time.minus(args.model.lastStateTransitionAt)
     return if (whitePlayerStates.contains(args.model.state)) {
         args.model.props.copy(whitePlayerTime = PlayTime(args.model.props.whitePlayerTime.value + delta))
@@ -368,7 +364,7 @@ fun updatePlayerTime(args: ArgForInstanceNonEvent<Game, Ctx, Collections>): Game
     }
 }
 
-fun remainingPlayTime(args: ArgForInstanceNonEvent<Game, Ctx, Collections>): Instant {
+fun remainingPlayTime(args: LifecycleArgs<Game, Ctx, Collections>): Instant {
     val playTime = if (whitePlayerStates.contains(args.model.state)) args.model.props.whitePlayerTime else args.model.props.blackPlayerTime
     val remainingTime = 5.minutes.minus(playTime.value)
     return args.time.plus(remainingTime)
