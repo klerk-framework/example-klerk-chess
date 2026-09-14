@@ -1,6 +1,6 @@
 package dev.klerkframework.chess
 
-import dev.klerkframework.chess.klerk.Collections
+import dev.klerkframework.chess.klerk.Views
 import dev.klerkframework.chess.klerk.Ctx
 import dev.klerkframework.chess.klerk.game.*
 import dev.klerkframework.klerk.ModelID
@@ -18,7 +18,7 @@ val AI_THINKING_TIME = 4.seconds
 @Serializable
 data class AiCursor(val gameId: ModelID<Game>)
 
-object CalculateAiAction : JobType.Local<AiCursor, Ctx, Collections>() {
+object CalculateAiAction : JobType.Local<AiCursor, Ctx, Views>() {
 
     private val log = KotlinLogging.logger {}
     private val random = Random(seed = 1)
@@ -32,7 +32,7 @@ object CalculateAiAction : JobType.Local<AiCursor, Ctx, Collections>() {
     // Note: the thinking pause is the job's scheduleAt, not a delay() inside the step. The context a step runs under
     // (and thus the time the emitted command is applied at) is built before the step starts, so sleeping here would
     // hide the AI's thinking time from the players' clocks.
-    override suspend fun step(args: JobStepArgs.Local<AiCursor, Ctx, Collections>): JobResult<AiCursor> {
+    override suspend fun step(args: JobStepArgs.Local<AiCursor, Ctx, Views>): JobResult<AiCursor> {
         delay(AI_THINKING_TIME)     // simulate thinking
         val game = with(args.reader) { get(args.cursor.gameId) }
 

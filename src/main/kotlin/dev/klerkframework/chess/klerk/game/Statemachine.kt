@@ -11,7 +11,6 @@ import dev.klerkframework.klerk.PropertyCollectionValidity.*
 import dev.klerkframework.klerk.command.Command
 import dev.klerkframework.klerk.statemachine.StateMachine
 import dev.klerkframework.klerk.statemachine.stateMachine
-import dev.klerkframework.klerk.validation.PropertyValidation
 import kotlin.time.Duration.Companion.ZERO
 
 
@@ -31,12 +30,12 @@ enum class GameState {
     BlackHasProposedDraw,
 }
 
-fun createGameStateMachine(collections: Collections): StateMachine<Game, Enum<*>, Ctx, Collections> =
+fun createGameStateMachine(views: Views): StateMachine<Game, Enum<*>, Ctx, Views> =
     stateMachine {
 
         event(CreateGame) {
-            validReferences(CreateGameParams::whitePlayer, collections.users.all)
-            validReferences(CreateGameParams::blackPlayer, collections.users.all)
+            validReferences(CreateGameParams::whitePlayer, views.users.all)
+            validReferences(CreateGameParams::blackPlayer, views.users.all)
             validateWithParameters(::playerMustBeWhite)
             validateWithParameters(::cannotPlayAgainstSelf)
         }
@@ -238,13 +237,13 @@ object PromotePawn : InstanceEventWithParameters<Game, PromotePawnParams>(Extern
 private val whitePlayerStates = setOf(WhiteTurn.name, WhiteHasProposedDraw.name, WhitePromotePawn.name)
 private val blackPlayerStates = setOf(BlackTurn.name, BlackHasProposedDraw.name, BlackPromotePawn.name)
 
-fun isValidMove(args: ArgForInstanceEvent<Game, MakeMoveParams, Ctx, Collections>): PropertyCollectionValidity {
+fun isValidMove(args: InstanceEventArgs<Game, MakeMoveParams, Ctx, Views>): PropertyCollectionValidity {
     val move = CoordinateNotationMove.move(args.command.params.from, args.command.params.to)
     val validMoves = calculateAllValidMoves(fromMoves(args.model.props.moves), valueOf(args.model.state))
     return if (validMoves.contains(move)) Valid else Invalid("Illegal move")
 }
 
-fun makeMove(args: ArgForInstanceEvent<Game, MakeMoveParams, Ctx, Collections>): Game {
+fun makeMove(args: InstanceEventArgs<Game, MakeMoveParams, Ctx, Views>): Game {
     val moveInCoordinateNotation = CoordinateNotationMove.move(
         from = Position.fromString(args.command.params.from.value),
         to = Position.fromString(args.command.params.to.value)
@@ -252,7 +251,7 @@ fun makeMove(args: ArgForInstanceEvent<Game, MakeMoveParams, Ctx, Collections>):
     return args.model.props.copy(moves = args.model.props.moves.plus(moveInCoordinateNotation))
 }
 
-fun newGame(args: ArgForVoidEvent<Game, CreateGameParams, Ctx, Collections>): Game {
+fun newGame(args: VoidEventArgs<Game, CreateGameParams, Ctx, Views>): Game {
     return Game(
         whitePlayer = args.command.params.whitePlayer,
         blackPlayer = args.command.params.blackPlayer,
@@ -262,11 +261,11 @@ fun newGame(args: ArgForVoidEvent<Game, CreateGameParams, Ctx, Collections>): Ga
     )
 }
 
-fun tellUserAboutDecline(args: ArgForInstanceEvent<Game, Nothing?, Ctx, Collections>) {
+fun tellUserAboutDecline(args: InstanceEventArgs<Game, Nothing?, Ctx, Views>) {
     println("Let's pretend we send an email")
 }
 
-fun currentPlayerIsCheckmate(args: LifecycleArgs<Game, Ctx, Collections>): Boolean {
+fun currentPlayerIsCheckmate(args: LifecycleArgs<Game, Ctx, Views>): Boolean {
     val board = fromMoves(args.model.props.moves)
     if (args.model.state == WhiteTurn.name) {
         return isWhiteCheck(board) &&
@@ -279,13 +278,13 @@ fun currentPlayerIsCheckmate(args: LifecycleArgs<Game, Ctx, Collections>): Boole
     throw IllegalArgumentException()
 }
 
-fun blackCanPromotePawn(args: LifecycleArgs<Game, Ctx, Collections>): Boolean =
+fun blackCanPromotePawn(args: LifecycleArgs<Game, Ctx, Views>): Boolean =
     fromMoves(args.model.props.moves).canPromotePawn(Color.Black)
 
-fun whiteCanPromotePawn(args: LifecycleArgs<Game, Ctx, Collections>): Boolean =
+fun whiteCanPromotePawn(args: LifecycleArgs<Game, Ctx, Views>): Boolean =
     fromMoves(args.model.props.moves).canPromotePawn(Color.White)
 
-fun isPromotablePiece(args: ArgForInstanceEvent<Game, PromotePawnParams, Ctx, Collections>): PropertyCollectionValidity {
+fun isPromotablePiece(args: InstanceEventArgs<Game, PromotePawnParams, Ctx, Views>): PropertyCollectionValidity {
     val piece = args.command.params.piece.value
     if (piece.length != 1) {
         return Invalid("Illegal piece")
@@ -293,16 +292,16 @@ fun isPromotablePiece(args: ArgForInstanceEvent<Game, PromotePawnParams, Ctx, Co
     return if ("nqrb".contains(piece)) Valid else Invalid("Illegal piece")
 }
 
-fun promotePawn(args: ArgForInstanceEvent<Game, PromotePawnParams, Ctx, Collections>): Game {
+fun promotePawn(args: InstanceEventArgs<Game, PromotePawnParams, Ctx, Views>): Game {
     val updatedLastMove = args.model.props.moves.last().withPromotedPawn(args.command.params.piece)
     val updatedMoves = args.model.props.moves.dropLast(1).plus(updatedLastMove)
     return args.model.props.copy(moves = updatedMoves)
 }
 
-fun automaticDraw(args: LifecycleArgs<Game, Ctx, Collections>): Boolean =
+fun automaticDraw(args: LifecycleArgs<Game, Ctx, Views>): Boolean =
     isStalemate(args) || isDeadPosition(args) || isFivefoldRepetition()
 
-fun updatePlayersRatings(args: LifecycleArgs<Game, Ctx, Collections>): List<Command<out Any, out Any>> {
+fun updatePlayersRatings(args: LifecycleArgs<Game, Ctx, Views>): List<Command<out Any, out Any>> {
     val whitePoints = when (args.model.state) {
         WhiteVictory.name -> 2
         Draw.name -> 1
@@ -319,7 +318,7 @@ fun updatePlayersRatings(args: LifecycleArgs<Game, Ctx, Collections>): List<Comm
     )
 }
 
-fun onlyByCurrentPlayer(args: ArgForInstanceEvent<Game, Nothing?, Ctx, Collections>): PropertyCollectionValidity {
+fun onlyByCurrentPlayer(args: InstanceEventArgs<Game, Nothing?, Ctx, Views>): PropertyCollectionValidity {
     val userId = args.context.userId ?: return Invalid("Must be logged in")
     if (whitePlayerStates.contains(args.model.state)) {
         return if (userId == args.model.props.whitePlayer) Valid else Invalid("Wrong player")
@@ -330,7 +329,7 @@ fun onlyByCurrentPlayer(args: ArgForInstanceEvent<Game, Nothing?, Ctx, Collectio
     throw IllegalArgumentException()
 }
 
-fun onlyByNotCurrentPlayer(args: ArgForInstanceEvent<Game, Nothing?, Ctx, Collections>): PropertyCollectionValidity {
+fun onlyByNotCurrentPlayer(args: InstanceEventArgs<Game, Nothing?, Ctx, Views>): PropertyCollectionValidity {
     val userId = args.context.userId ?: return Invalid("Must be logged in")
     if (blackPlayerStates.contains(args.model.state)) {
         return if (userId == args.model.props.whitePlayer) Valid else Invalid("Wrong player")
@@ -341,21 +340,21 @@ fun onlyByNotCurrentPlayer(args: ArgForInstanceEvent<Game, Nothing?, Ctx, Collec
     throw IllegalArgumentException()
 }
 
-fun cannotPlayAgainstSelf(args: ArgForVoidEvent<Game, CreateGameParams, Ctx, Collections>): PropertyCollectionValidity {
+fun cannotPlayAgainstSelf(args: VoidEventArgs<Game, CreateGameParams, Ctx, Views>): PropertyCollectionValidity {
     return if (args.command.params.whitePlayer == args.command.params.blackPlayer) Invalid("Players must be different") else Valid
 }
 
-fun onlyByBlackPlayer(args: ArgForInstanceEvent<Game, Nothing?, Ctx, Collections>): PropertyCollectionValidity {
+fun onlyByBlackPlayer(args: InstanceEventArgs<Game, Nothing?, Ctx, Views>): PropertyCollectionValidity {
     val userId = args.context.userId ?: return Invalid("Must be logged in")
     return if (args.model.props.blackPlayer == userId) Valid else Invalid()
 }
 
-fun playerMustBeWhite(args: ArgForVoidEvent<Game, CreateGameParams, Ctx, Collections>): PropertyCollectionValidity {
+fun playerMustBeWhite(args: VoidEventArgs<Game, CreateGameParams, Ctx, Views>): PropertyCollectionValidity {
     val user = args.context.user ?: return Invalid("Must be logged in")
     return if (args.command.params.whitePlayer == user.id) Valid else Invalid("You must play white")
 }
 
-fun updatePlayerTime(args: LifecycleArgs<Game, Ctx, Collections>): Game {
+fun updatePlayerTime(args: LifecycleArgs<Game, Ctx, Views>): Game {
     val delta = args.time.minus(args.model.lastStateTransitionAt)
     return if (whitePlayerStates.contains(args.model.state)) {
         args.model.props.copy(whitePlayerTime = PlayTime(args.model.props.whitePlayerTime.value + delta))
@@ -364,7 +363,7 @@ fun updatePlayerTime(args: LifecycleArgs<Game, Ctx, Collections>): Game {
     }
 }
 
-fun remainingPlayTime(args: LifecycleArgs<Game, Ctx, Collections>): Instant {
+fun remainingPlayTime(args: LifecycleArgs<Game, Ctx, Views>): Instant {
     val playTime = if (whitePlayerStates.contains(args.model.state)) args.model.props.whitePlayerTime else args.model.props.blackPlayerTime
     val remainingTime = 5.minutes.minus(playTime.value)
     return args.time.plus(remainingTime)

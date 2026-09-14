@@ -1,7 +1,7 @@
 package dev.klerkframework.chess.plugins
 
 import dev.klerkframework.chess.html.*
-import dev.klerkframework.chess.klerk.Collections
+import dev.klerkframework.chess.klerk.Views
 import dev.klerkframework.chess.klerk.Ctx
 import dev.klerkframework.chess.klerk.game.Game
 import dev.klerkframework.chess.klerk.user.User
@@ -16,7 +16,7 @@ import graphql.GraphQLContext
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
 
-fun Application.configureRouting(klerk: Klerk<Ctx, Collections>) {
+fun Application.configureRouting(klerk: Klerk<Ctx, Views>) {
 
     val klerkWeb = KlerkWeb(
         klerk,
@@ -44,7 +44,7 @@ internal fun showOptionalParameters(event: EventReference) = false
  * Creates a Context from a Call.
  * As authentication is something that should not be handled by Klerk, we will just fake it here.
  */
-suspend fun ApplicationCall.ctx(klerk: Klerk<Ctx, Collections>): Ctx {
+suspend fun ApplicationCall.ctx(klerk: Klerk<Ctx, Views>): Ctx {
     val user = klerk.read(Ctx.system()) {
         views.users.all.asSequence().first { it.props.name.valueWithoutAuthorization == "Alice" }
     }
@@ -57,7 +57,7 @@ suspend fun ApplicationCall.ctx(klerk: Klerk<Ctx, Collections>): Ctx {
  * In a real app we would use a session token or similar to figure out who the user is. Here, we always just use the
  * user Alice.
  */
-suspend fun GraphQLContext.ctx(klerk: Klerk<Ctx, Collections>): Ctx {
+suspend fun GraphQLContext.ctx(klerk: Klerk<Ctx, Views>): Ctx {
     val user = klerk.read(Ctx.system()) {
         views.users.all.asSequence().first { it.props.name.valueWithoutAuthorization == "Alice" }
     }

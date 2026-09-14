@@ -11,7 +11,6 @@ import dev.klerkframework.klerk.storage.AttachedBlobStore
 import dev.klerkframework.klerk.storage.Persistence
 import dev.klerkframework.klerk.storage.SqlPersistence
 import dev.klerkframework.web.assets.AssetsPlugin
-import kotlinx.html.emptyMap
 import org.sqlite.SQLiteDataSource
 import kotlin.time.Clock
 import kotlin.time.Instant
@@ -44,18 +43,18 @@ class Ctx(
 
 }
 
-data class Collections(
+data class Views(
     val users: ModelViews<User, Ctx>,
     val games: ModelViews<Game, Ctx>,
 )
 
-fun createConfig(): Specification<Ctx, Collections> {
-    val collections = Collections(ModelViews(), ModelViews())
-    return SpecificationBuilder<Ctx, Collections>(collections).build {
+fun createConfig(): Specification<Ctx, Views> {
+    val views = Views(ModelViews(), ModelViews())
+    return SpecificationBuilder<Ctx, Views>(views).build {
         plugins(AssetsPlugin(emptySet()))
         managedModels {
-            model(User::class, createUserStateMachine(), collections.users)
-            model(Game::class, createGameStateMachine(collections), collections.games)
+            model(User::class, createUserStateMachine(), views.users)
+            model(Game::class, createGameStateMachine(views), views.games)
         }
         jobs {
             register(CalculateAiAction)

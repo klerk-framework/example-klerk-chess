@@ -1,6 +1,6 @@
 package dev.klerkframework.chess.html
 
-import dev.klerkframework.chess.klerk.Collections
+import dev.klerkframework.chess.klerk.Views
 import dev.klerkframework.chess.klerk.Ctx
 import dev.klerkframework.chess.klerk.game.Game
 import dev.klerkframework.chess.plugins.ctx
@@ -12,7 +12,7 @@ import io.ktor.server.application.*
 import io.ktor.server.html.*
 import kotlinx.html.*
 
-suspend fun listGames(call: ApplicationCall, klerk: Klerk<Ctx, Collections>, klerkWeb: KlerkWeb<Ctx, Collections>) {
+suspend fun listGames(call: ApplicationCall, klerk: Klerk<Ctx, Views>, klerkWeb: KlerkWeb<Ctx, Views>) {
     val context = call.ctx(klerk)
     klerk.readSuspend(context) {
         call.respondHtml {

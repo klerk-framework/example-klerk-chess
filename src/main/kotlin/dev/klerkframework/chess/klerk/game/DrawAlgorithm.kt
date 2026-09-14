@@ -1,6 +1,6 @@
 package dev.klerkframework.chess.klerk.game
 
-import dev.klerkframework.chess.klerk.Collections
+import dev.klerkframework.chess.klerk.Views
 import dev.klerkframework.chess.klerk.Ctx
 import dev.klerkframework.chess.klerk.game.ShowNotificationDecisions.*
 import dev.klerkframework.klerk.LifecycleArgs
@@ -10,9 +10,9 @@ import dev.klerkframework.klerk.misc.Decision
 import dev.klerkframework.klerk.misc.FlowChartAlgorithm
 
 @OptIn(ExperimentalKlerkApi::class)
-object IsAutomaticDraw : FlowChartAlgorithm<LifecycleArgs<Game, Ctx, Collections>, Boolean>("Is it a draw?") {
+object IsAutomaticDraw : FlowChartAlgorithm<LifecycleArgs<Game, Ctx, Views>, Boolean>("Is it a draw?") {
 
-    override fun configure(): AlgorithmBuilder<LifecycleArgs<Game, Ctx, Collections>, Boolean>.() -> Unit = {
+    override fun configure(): AlgorithmBuilder<LifecycleArgs<Game, Ctx, Views>, Boolean>.() -> Unit = {
 
         start(IsStalemate)
 
@@ -38,8 +38,8 @@ object IsAutomaticDraw : FlowChartAlgorithm<LifecycleArgs<Game, Ctx, Collections
 @OptIn(ExperimentalKlerkApi::class)
 sealed class ShowNotificationDecisions<T>(
     override val name: String,
-    override val function: (LifecycleArgs<Game, Ctx, Collections>) -> T
-) : Decision<T, LifecycleArgs<Game, Ctx, Collections>> {
+    override val function: (LifecycleArgs<Game, Ctx, Views>) -> T
+) : Decision<T, LifecycleArgs<Game, Ctx, Views>> {
 
     data object IsStalemate : ShowNotificationDecisions<Boolean>("Is it a stalemate?", ::isStalemate)
 

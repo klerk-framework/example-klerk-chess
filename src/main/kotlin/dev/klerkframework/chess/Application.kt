@@ -1,6 +1,6 @@
 package dev.klerkframework.chess
 
-import dev.klerkframework.chess.klerk.Collections
+import dev.klerkframework.chess.klerk.Views
 import dev.klerkframework.chess.klerk.Ctx
 import dev.klerkframework.chess.klerk.UserName
 import dev.klerkframework.chess.klerk.createConfig
@@ -18,27 +18,13 @@ import dev.klerkframework.klerk.Klerk
 import dev.klerkframework.klerk.Model
 import dev.klerkframework.klerk.ModelID
 import dev.klerkframework.klerk.command.Command
-import dev.klerkframework.klerk.command.CommandToken
-import dev.klerkframework.klerk.command.ProcessingOptions
 import dev.klerkframework.graphql.installKlerkGraphQL
-import dev.klerkframework.klerk.Unauthenticated
 import dev.klerkframework.klerk.read.ModelModification
 import dev.klerkframework.mcp.createMcpServer
 import graphql.GraphQLContext
-import io.ktor.http.ContentType
-import io.ktor.serialization.kotlinx.json.json
-import io.ktor.server.application.*
-import io.ktor.server.application.ApplicationCall
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
-import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.server.response.respondText
-import io.ktor.server.routing.get
-import io.ktor.server.routing.port
-import io.ktor.server.routing.routing
-import io.modelcontextprotocol.kotlin.sdk.server.mcp
 import io.modelcontextprotocol.kotlin.sdk.server.mcpStatelessStreamableHttp
-import io.modelcontextprotocol.kotlin.sdk.types.McpJson
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -76,7 +62,7 @@ fun main() {
     }).start(wait = true)
 }
 
-suspend fun createPlayers(klerk: Klerk<Ctx, Collections>) {
+suspend fun createPlayers(klerk: Klerk<Ctx, Views>) {
     val commandCreateAlice = Command(
         CreateUser,
         CreateUserParams(UserName("Alice"))
@@ -95,7 +81,7 @@ suspend fun createPlayers(klerk: Klerk<Ctx, Collections>) {
 /**
  * Subscribes to game changes. Creates a job if AI should act.
  */
-suspend fun initAI(klerk: Klerk<Ctx, Collections>) {
+suspend fun initAI(klerk: Klerk<Ctx, Views>) {
     log.info { "Initiating AI" }
     val robot = klerk.read(Ctx.system()) {
         views.users.all.asSequence().first { it.props.name.value == "Mr. Robot" }

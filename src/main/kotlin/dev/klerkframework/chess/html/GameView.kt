@@ -1,6 +1,6 @@
 package dev.klerkframework.chess.html
 
-import dev.klerkframework.chess.klerk.Collections
+import dev.klerkframework.chess.klerk.Views
 import dev.klerkframework.chess.klerk.CoordinateNotationMove
 import dev.klerkframework.chess.klerk.Ctx
 import dev.klerkframework.chess.klerk.Position
@@ -30,7 +30,7 @@ private data class RenderGameData(
     val possibleEvents: Set<EventReference>
 )
 
-suspend fun renderGame(call: ApplicationCall, klerk: Klerk<Ctx, Collections>, klerkWeb: KlerkWeb<Ctx, Collections>) {
+suspend fun renderGame(call: ApplicationCall, klerk: Klerk<Ctx, Views>, klerkWeb: KlerkWeb<Ctx, Views>) {
     val context = call.ctx(klerk)
     val gameId = ModelID<Game>(requireNotNull(call.parameters["id"]).toInt())
     val dryRunMove = moveInQueryParameters(call)
@@ -313,7 +313,7 @@ private fun includeStyle() = """
 
     </style>"""
 
-suspend fun confirmMove(call: ApplicationCall, klerk: Klerk<Ctx, Collections>) {
+suspend fun confirmMove(call: ApplicationCall, klerk: Klerk<Ctx, Views>) {
     val gameId = ModelID<Game>(requireNotNull(call.parameters["id"]).toInt())
     val moveString = call.receiveParameters()["move"]
     moveString?.let {
@@ -327,7 +327,7 @@ suspend fun confirmMove(call: ApplicationCall, klerk: Klerk<Ctx, Collections>) {
     call.respondRedirect("/game/${gameId}")
 }
 
-suspend fun handleSse(call: ApplicationCall, klerk: Klerk<Ctx, Collections>) {
+suspend fun handleSse(call: ApplicationCall, klerk: Klerk<Ctx, Views>) {
     //There is better support for SSE in ktor 3
     val id = ModelID<Any>(requireNotNull(call.parameters["id"]).toInt())
     val events = klerk.models.subscribe(call.ctx(klerk), id)

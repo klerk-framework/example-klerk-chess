@@ -8,7 +8,7 @@ import dev.klerkframework.klerk.NegativeAuthorization.Pass
 import dev.klerkframework.klerk.PositiveAuthorization.Allow
 import dev.klerkframework.klerk.PositiveAuthorization.NoOpinion
 
-fun createAuthorizationRules(): SpecificationBuilder<Ctx, Collections>.() -> Unit = {
+fun createAuthorizationRules(): SpecificationBuilder<Ctx, Views>.() -> Unit = {
     authorization {
         commands {
             positive {
@@ -44,7 +44,7 @@ fun createAuthorizationRules(): SpecificationBuilder<Ctx, Collections>.() -> Uni
     }
 }
 
-fun canReadTheirOwnUserAndMrRobot(args: ArgModelContextReader<Ctx, Collections>): PositiveAuthorization {
+fun canReadTheirOwnUserAndMrRobot(args: ModelReadRuleArgs<Ctx, Views>): PositiveAuthorization {
     val p = (args.model.props as? User) ?: return NoOpinion
     if (p.name.value == "Mr. Robot") {
         return Allow
@@ -52,27 +52,27 @@ fun canReadTheirOwnUserAndMrRobot(args: ArgModelContextReader<Ctx, Collections>)
     return if (p.name.value == args.context.user?.props?.name?.value) Allow else NoOpinion
 }
 
-fun everybodyCanReadGames(args: ArgModelContextReader<Ctx, Collections>): PositiveAuthorization {
+fun everybodyCanReadGames(args: ModelReadRuleArgs<Ctx, Views>): PositiveAuthorization {
     return if (args.model.props is Game) Allow else NoOpinion
 }
 
-fun authenticatedCanDoEverything(args: ArgCommandContextReader<*, Ctx, Collections>): PositiveAuthorization {
+fun authenticatedCanDoEverything(args: CommandRuleArgs<*, Ctx, Views>): PositiveAuthorization {
     return if (args.context.actor is Unauthenticated) NoOpinion else Allow
 }
 
-fun everybodyCanReadAnyProperty(args: ArgsForPropertyAuth<Ctx, Collections>): PositiveAuthorization {
+fun everybodyCanReadAnyProperty(args: PropertyReadRuleArgs<Ctx, Views>): PositiveAuthorization {
     return Allow
 }
 
-fun aliceCanReadTheEventLog(args: ArgContextReader<Ctx, Collections>): PositiveAuthorization {
+fun aliceCanReadTheEventLog(args: EventLogRuleArgs<Ctx, Views>): PositiveAuthorization {
     return if (args.context.user?.props?.name?.value == "Alice") Allow else NoOpinion
 }
 
-fun mustBeAuthenticatedToReadTheEventLog(args: ArgContextReader<Ctx, Collections>): NegativeAuthorization {
+fun mustBeAuthenticatedToReadTheEventLog(args: EventLogRuleArgs<Ctx, Views>): NegativeAuthorization {
     return if (args.context.actor is Unauthenticated) Deny else Pass
 }
 
-fun canOnlySeeMovesInGamesWhichYouAreInvolvedIn(args: ArgsForPropertyAuth<Ctx, Collections>): NegativeAuthorization {
+fun canOnlySeeMovesInGamesWhichYouAreInvolvedIn(args: PropertyReadRuleArgs<Ctx, Views>): NegativeAuthorization {
     val p = (args.model.props as? Game)?: return Pass
     return if ((setOf(p.whitePlayer, p.blackPlayer).contains(args.context.user?.id))) Pass else Deny
 }
