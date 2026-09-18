@@ -54,7 +54,7 @@ suspend fun listGames(call: ApplicationCall, klerk: Klerk<Ctx, Views>, klerkWeb:
 
                 h2 { +"Actions" }
                 with(klerkWeb.support) {
-                    getPossibleVoidEvents(Game::class).forEach {
+                    possibleVoidEvents(Game::class).forEach {
                         eventButton(
                             it, null, context,
                             onCancelPath = "/",

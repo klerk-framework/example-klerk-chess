@@ -1,13 +1,15 @@
 package dev.klerkframework.chess.klerk.game
 
 import dev.klerkframework.chess.klerk.*
+import dev.klerkframework.klerk.validation.PropertyCollectionValidity
+import dev.klerkframework.klerk.validation.Valid
 import dev.klerkframework.chess.klerk.game.Board.Companion.fromMoves
 import dev.klerkframework.chess.klerk.game.GameState.*
 import dev.klerkframework.chess.klerk.user.UpdateScore
 import dev.klerkframework.chess.klerk.user.UpdateScoreParams
 import dev.klerkframework.klerk.*
 import dev.klerkframework.klerk.EventVisibility.External
-import dev.klerkframework.klerk.PropertyCollectionValidity.*
+import dev.klerkframework.klerk.validation.PropertyCollectionValidity.*
 import dev.klerkframework.klerk.command.Command
 import dev.klerkframework.klerk.statemachine.StateMachine
 import dev.klerkframework.klerk.statemachine.stateMachine
@@ -355,7 +357,7 @@ fun playerMustBeWhite(args: VoidEventArgs<Game, CreateGameParams, Ctx, Views>): 
 }
 
 fun updatePlayerTime(args: LifecycleArgs<Game, Ctx, Views>): Game {
-    val delta = args.time.minus(args.model.lastStateTransitionAt)
+    val delta = args.context.time.minus(args.model.lastStateTransitionAt)
     return if (args.model.isIn(whitePlayerStates)) {
         args.model.props.copy(whitePlayerTime = PlayTime(args.model.props.whitePlayerTime.value + delta))
     } else {
@@ -366,5 +368,5 @@ fun updatePlayerTime(args: LifecycleArgs<Game, Ctx, Views>): Game {
 fun remainingPlayTime(args: LifecycleArgs<Game, Ctx, Views>): Instant {
     val playTime = if (args.model.isIn(whitePlayerStates)) args.model.props.whitePlayerTime else args.model.props.blackPlayerTime
     val remainingTime = 5.minutes.minus(playTime.value)
-    return args.time.plus(remainingTime)
+    return args.context.time.plus(remainingTime)
 }

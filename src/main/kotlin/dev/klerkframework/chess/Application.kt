@@ -91,18 +91,16 @@ suspend fun initAI(klerk: Klerk<Ctx, Views>) {
     // make AI react to events
     GlobalScope.launch {
         klerk.modelChanges.subscribe(null, context).collect {
+            if (it.modelClass != Game::class) {
+                return@collect
+            }
             if (it is ModelModification.Created || it is ModelModification.Transitioned) {
-                val model = klerk.read(context) { get(it.id) }
-                if (model.props !is Game) {
-                    return@collect
-                }
+                @Suppress("UNCHECKED_CAST")
+                val model = klerk.read(context) { get(it.id as ModelID<Game>) }
                 if (aiShouldAct(model, robot)) {
                     // A fresh context, since Ctx.time is stamped when the context is created.
                     val aiContext = Ctx.fromUser(robot)
-                    @Suppress("UNCHECKED_CAST")
-                    klerk.jobs.schedule(
-                        CalculateAiAction.declare(AiCursor(model.id as ModelID<Game>)), aiContext
-                    )
+                    klerk.jobs.schedule(CalculateAiAction.declare(AiCursor(model.id)), aiContext)
                 }
             }
         }

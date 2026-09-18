@@ -1,6 +1,7 @@
 package dev.klerkframework.chess.klerk
 
 import dev.klerkframework.klerk.Translation
+import dev.klerkframework.klerk.validation.Valid
 import dev.klerkframework.klerk.datatypes.DurationContainer
 import dev.klerkframework.klerk.datatypes.IntContainer
 import dev.klerkframework.klerk.datatypes.StringContainer
@@ -71,7 +72,7 @@ class Position(value: String) : StringContainer(value) {
 
     private fun isSquareOnBoard(square: String, translation: Translation): PropertyValidity {
         if (columns.contains(square[0]) && square[1].digitToIntOrNull() in 1..8) {
-            return PropertyValidity.Valid
+            return Valid
         }
         return PropertyValidity.Invalid("Illegal position")
     }

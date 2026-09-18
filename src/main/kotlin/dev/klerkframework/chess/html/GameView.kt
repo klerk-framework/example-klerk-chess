@@ -13,7 +13,6 @@ import dev.klerkframework.chess.plugins.ctx
 import dev.klerkframework.klerk.*
 import dev.klerkframework.klerk.command.Command
 import dev.klerkframework.klerk.command.ProcessingOptions
-import dev.klerkframework.klerk.command.CommandToken
 import dev.klerkframework.web.KlerkWeb
 import dev.klerkframework.web.eventButton
 import io.ktor.http.*
@@ -27,7 +26,7 @@ private data class RenderGameData(
     val game: Model<Game>,
     val whiteName: UserName,
     val blackName: UserName,
-    val possibleEvents: Set<EventReference>
+    val possibleEvents: Set<InstanceEvent<Game, *>>
 )
 
 suspend fun renderGame(call: ApplicationCall, klerk: Klerk<Ctx, Views>, klerkWeb: KlerkWeb<Ctx, Views>) {
@@ -40,19 +39,13 @@ suspend fun renderGame(call: ApplicationCall, klerk: Klerk<Ctx, Views>, klerkWeb
         klerk.handle(
             Command(MakeMove, gameId, MakeMoveParams(dryRunMove.from, dryRunMove.to)),
             context,
-            ProcessingOptions(CommandToken.simple(), dryRun = true)
+            ProcessingOptions(dryRun = true)
         )
     }
 
     val renderGameData = klerk.read(context) {
-        val game = if (dryRunResult == null) get(gameId) else {
-            @Suppress("UNCHECKED_CAST")
-            when (dryRunResult) {
-                is CommandResult.Failure -> get(gameId)
-                is CommandResult.Success -> dryRunResult.authorizedModels[gameId] as Model<Game>
-            }
-        }
-        val possibleEvents = getPossibleEvents(gameId)
+        val game = dryRunResult?.fold({ it.authorizedPrimaryModel }, { null }) ?: get(gameId)
+        val possibleEvents = possibleEvents(gameId)
         RenderGameData(
             game = game,
             whiteName = get(game.props.whitePlayer).props.name,
@@ -91,7 +84,7 @@ suspend fun renderGame(call: ApplicationCall, klerk: Klerk<Ctx, Views>, klerkWeb
                     unsafe {
                         +renderSquares(
                             Board.fromMoves(renderGameData.game.props.moves),
-                            renderGameData.possibleEvents.contains(MakeMove.id)
+                            renderGameData.possibleEvents.contains(MakeMove)
                         )
                     }
                 }
@@ -101,7 +94,7 @@ suspend fun renderGame(call: ApplicationCall, klerk: Klerk<Ctx, Views>, klerkWeb
                     h3 { +"Actions" }
                     with(klerkWeb.support) {
                         renderGameData.possibleEvents
-                            .filter { it != MakeMove.id }   // we handle MakeMove separately
+                            .filter { it != MakeMove }   // we handle MakeMove separately
                             .forEach {
                                 eventButton(
                                     it, renderGameData.game.id, context,
